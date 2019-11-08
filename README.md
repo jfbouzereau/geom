@@ -1,5 +1,7 @@
 # Geometry Construction Set
 
+![screenshot](screenshot.png)
+
 With this playground you can verify some fundamental geometric theorems :
 
 * Demo 2: In a triangle the three medians intersect at the same point, the center of gravity.
