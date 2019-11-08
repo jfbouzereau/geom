@@ -10,11 +10,11 @@ With this playground you can verify some fundamental geometric theorems :
 
 * Demo 4: In a triangle the three bisectors intersect at the same point, the center of the inscribed circle.
 
-* Demo 5: The three circles intersect at the same point, the point of Miquel.
+* Demo 5: The three circles intersect at the same point, the Miquel point.
 
 * Demo 6: In a triangle, the three mediators intersect at the same point, the center of the circumscribed circle.
 
-* Demo 7: The middle sides of any quadrilateral form the parallelogram of Varignon.
+* Demo 7: The middle sides of any quadrilateral form the Varignon parallelogram.
 
 * Demo 8: Construction of a pentagon inscribed in a circle.
 
