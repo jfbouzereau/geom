@@ -1175,10 +1175,10 @@ function TranslationBuilder() {
 
 	self.update = function(target) {
 		var point = target;
-		var segment1 = parents[0];
+		var segment1 = self.parents[0];
 		var pointa = segment1.builder.parents[0];
 		var pointb = segment1.builder.parents[1];
-		var point2 = parents[1];
+		var point2 = self.parents[1];
 
 		if(!segment1.valid) return point.valid = false;
 		if(!point2.valid) return point.valid = false;

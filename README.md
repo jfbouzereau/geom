@@ -1,6 +1,7 @@
 # Geometry Construction Set
 
 ![screenshot](screenshot.png)
+![demo08](demo08.png)
 
 With this playground you can verify some fundamental geometric theorems :
 
