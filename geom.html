@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+body	{
+	margin:0px;
+	padding:0px;
+	overflow:hidden;
+}
+* {
+	box-sizing:border-box;
+}
+canvas {
+	position:fixed;
+	left:0px;
+	top:0px;
+}
+#control {
+	position:fixed;
+	top:0px;
+	right:0px;
+	height:220px;
+	width:166px;
+	background-color:black;
+	border-left:1px solid white;
+	padding:0px;
+	display:flex;
+	flex-wrap:wrap;	
+	align-content:start;
+}
+#control .button {
+	width:40px;
+	height:40px;
+	font-weight:bold;
+	padding:0px;
+	border:1px solid white;
+	margin-top:1px;
+	margin-left:1px;
+}
+#control .bcolor {
+	width:40px;
+	height:40px;
+	padding:0px;
+	border:1px solid white;
+	margin-top:1px;
+	margin-left:1px;
+}
+#control .bcommand {
+	width:40px;
+	height:40px;
+	padding:0px;
+	border:1px solid white;
+	margin-top:1px;
+	margin-left:1px;
+	color:white;
+	background-color:black;
+	border:1px solid white;
+	text-align:center;
+	font-size:28px;
+}
+#list {
+	position:fixed;
+	top:220px;
+	right:0px;
+	bottom:0px;
+	width:166px;
+	border-left:1px solid white;
+	border-top:1px solid white;
+	padding:0px;
+	background-color:black;
+}
+#list table {
+	position:absolute;	
+	left:2px;
+	top:0px;
+	width:100%;
+	font-family:Sans-Serif;
+	font-size:12px;
+	border-collapse:collapse;
+}
+#list table tr {
+	height:18px;
+}
+#list table tr td {
+	height:15px;
+	padding:0px;
+	margin:0px;
+	border:0px solid black;
+	cursor:pointer;
+	color:white;
+	background-color:black;
+}
+#list table tr.selected td {
+	color:black;
+	background-color:white;
+}
+#status {
+	position:fixed;
+	bottom:0px;
+	height:30px;
+	left:0px;
+	right:167px;
+	background-color:black;
+	border-top:1px solid white;
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	font-family:Sans-Serif;
+	font-style:italic;
+	font-size:16px;
+	font-weight:100;
+	color:#FFF;
+}
+#palette {
+	display:none;
+	position:fixed;
+}
+#palette div {
+	width:20px;
+	height:20px;
+	border:1px solid white;
+}
+</style>
+</head>
+<body>
+	<canvas></canvas>
+	<div id="control">
+		<div class="button" data-builder="Point"></div>
+		<div class="button" data-builder="Segment"></div>
+		<div class="button" data-builder="Line"></div>
+		<div class="button" data-builder="ThreePointCircle"></div>
+		<div class="button" data-builder="LineIntersection"></div>
+		<div class="button" data-builder="Middle"></div>
+		<div class="button" data-builder="CenteredCircle"></div>
+		<div class="button" data-builder="Perpendicular"></div>
+		<div class="button" data-builder="Parallel"></div>
+		<div class="button" data-builder="Bisector"></div>
+		<div class="button" data-builder="Projection"></div>
+		<div class="button" data-builder="LineCircleIntersection"></div>
+		<div class="button" data-builder="CircleIntersection"></div>
+		<div class="button" data-builder="Translation"></div>
+		<div class="button" data-builder="PointOnLine"></div>
+		<div class="button" data-builder="PointOnCircle"></div>
+		<div class="bcommand" data-help="Download the config as json file" data-command="download">⬇︎</div>
+	</div>
+	<div id="list">
+		<table></table>
+	</div>
+	<div id="status">
+		<span></span>
+	</div>
+	<div id="palette">
+	</div>
+</body>
+<script src="geom.js"></script>
+<script>
+var ACTION = 0;
+var A_CREATE = ++ACTION;
+var A_BUILD = ++ACTION;
+var A_DRAG = ++ACTION;
+var A_COLOR = ++ACTION;
+var A_SCROLL = ++ACTION;
+
+
+var COLORS = [
+	"rgb(128,128,128)","rgb(255,255,255)","rgb(255,0,0)","rgb(255,150,0)","rgb(255,255,0)",
+	"rgb(0,255,0)","rgb(0,255,255)","rgb(0,0,255)","rgb(180,0,255)",
+	"rgb(255,128,255)"];
+
+var xscroll=0, yscroll=0;
+
+var state = null;
+
+var canvas = document.querySelector("canvas");
+var ctx = canvas.getContext("2d");
+
+var objects = [];
+
+setupIcons();
+setupPalette();
+
+window.addEventListener("resize",draw);
+
+document.querySelector("#control").addEventListener("click",oncontrol);
+document.querySelector("#control").addEventListener("mousemove",onhelp);
+
+canvas.addEventListener("mousedown",ondown);
+canvas.addEventListener("mousemove",onmove);
+canvas.addEventListener("mouseup",onup);
+canvas.addEventListener("dragover",ondrag);
+canvas.addEventListener("drop",ondrop);
+
+document.querySelector("#list table").addEventListener("click",onlist);
+
+document.querySelector("#palette").addEventListener("click",onpalette);
+
+draw();
+
+//***************************************************************************
+
+function setupIcons() {
+
+	var canvas = document.createElement("canvas");
+
+	canvas.width = 38;
+	canvas.height = 38;
+	var ctx = canvas.getContext("2d");
+
+	var buttons = document.querySelectorAll("#control .button");
+	for(var i=0;i<buttons.length;i++) {
+		var button = buttons[i];
+		try {
+			ctx.save();
+			ctx.fillStyle = "#000";
+			ctx.fillRect(0,0,canvas.width,canvas.height);
+			var builder = eval("new "+button.dataset.builder+"Builder()");
+			builder.drawIcon(ctx,40,40);
+			ctx.restore();
+
+			var img = document.createElement("img");
+			img.src = canvas.toDataURL("image/png");
+			button.appendChild(img);	
+			
+			button.dataset.help = builder.getHelp();
+		}
+		catch(err) { console.log(err) }
+	}
+
+}
+
+//***************************************************************************
+
+function setupPalette() {
+
+	var palette = document.querySelector("#palette");
+
+	for(var i=0;i<COLORS.length;i++) {
+		var div = document.createElement("div");
+		div.style.backgroundColor = COLORS[i];
+		div.dataset.index = i;
+		palette.appendChild(div);		
+	}
+}
+
+//***************************************************************************
+
+function draw() {
+
+	var margin = document.querySelector("#control").getBoundingClientRect().width;
+
+	var width = window.innerWidth-margin;
+	var height = window.innerHeight;
+
+	canvas.width = width;
+	canvas.height = height;
+
+	ctx.fillStyle = "#000";
+	ctx.fillRect(0,0,canvas.width,canvas.height);
+
+	ctx.save();
+	ctx.translate(xscroll,yscroll);
+
+	for(var i=0;i<objects.length;i++) {
+		var obj = objects[i];
+		obj.valid = obj.builder.update(obj);
+		if(obj.valid)  {
+			ctx.save();
+			obj.draw(ctx,width,height);
+			ctx.restore();
+		}
+	}
+		
+	ctx.restore();
+}
+
+//***************************************************************************
+
+function oncontrol(event) {
+	var target = event.target;
+	if(target.tagName=="IMG")
+		target = target.parentElement;
+	if(target.tagName!="DIV") return;
+
+	if(target.dataset.builder) {
+		try {
+			var builder = eval("new "+target.dataset.builder+"Builder()");
+			var prompt = builder.getPrompt();		
+			showStatus(prompt);
+			if(builder instanceof PointBuilder)
+				state = {action:A_CREATE,builder:builder};
+			else
+				state = {action:A_BUILD,builder:builder};
+			draw();
+			}
+		catch(err) {
+			console.log(err);
+		}
+	}
+
+	if(target.dataset.color) {
+		state = {action:A_COLOR,color:target.dataset.color}
+		showStatus("Select the object");
+	}
+
+	if(target.dataset.command) {
+		switch(target.dataset.command) {
+			case "download": 
+				downloadConfig();
+				break;
+		}
+	}
+}
+
+//***************************************************************************
+
+function onhelp(event) {
+	if(state) return;
+
+	var target = event.target;
+	if(target.tagName=="IMG")
+		target = target.parentElement;
+	if(target.tagName!="DIV") return;
+
+	if(target.dataset.help)
+		showStatus(target.dataset.help)
+	else
+		showStatus("");
+}
+
+//***************************************************************************
+
+var xclick,yclick,xmove,ymove;
+
+function ondown(event) {
+
+	xclick = xmove = event.clientX;
+	yclick = ymove = event.clientY;
+
+	if(state && state.action==A_CREATE) {
+		state.point = new Point(xclick,yclick);	
+	}
+	else if(state && state.action==A_BUILD) {
+		state.index= getPickedObject(state.builder.getParentType());
+	}		
+	else if(state && state.action==A_COLOR) {
+		state.index = getPickedObject();
+	}
+	else if(!state) {
+		var index = getPickedObject(GPoint);
+		console.log("INDEX "+index);
+		if(index>=0)
+			state = {action:A_DRAG,index:index}
+		/*
+		else {
+			state = {action:A_SCROLL};
+			console.log("SCROLL");
+		}
+		*/
+	}
+
+	draw();
+}
+
+function onmove(event) {
+	if(!state) return;
+
+	xmove = event.clientX;
+	ymove = event.clientY;
+	
+	if(state.action == A_DRAG) {
+		var point = objects[state.index];
+		point.x = xmove;
+		point.y = ymove;
+	}
+	else if(state.action==A_SCROLL) {
+		xscroll += xmove-xclick;
+		yscroll += ymove-yclick;
+		xclick = xmove;
+		yclick = ymove;
+	}
+
+	draw();
+}
+
+function onup(event) {
+	if(!state) return;
+
+	xmove = event.clientX;
+	ymove = event.clientY;
+
+	if((state.action==A_CREATE) && state.point) {
+		var ok = state.builder.setParent(state.point);
+		if(ok) {
+			var obj = state.builder.build();
+			if(obj) {
+				objects.push(obj);
+				updateList();
+			}
+		}
+		showStatus("");
+	}
+
+	if(state.action==A_BUILD) {
+		if(state.index>=0) {
+			state.builder.setParent(objects[state.index]);
+			var msg = state.builder.getPrompt();
+			if(msg)
+				showStatus(msg);
+			else {
+				// building is complete
+				showStatus("");
+				var obj = state.builder.build();			
+				if(obj instanceof GObject)
+					objects.push(obj);
+				else if(obj instanceof Array)
+					objects.push.apply(objects,obj);
+				updateList();
+				state = null;
+				}
+		}
+		draw();
+		return;
+	}
+
+	if(state.action==A_COLOR) {
+		if(state.index>=0) {
+			objects[state.index].color = state.color;
+			draw();
+		}
+	}
+
+	state = null;
+
+	draw();
+}
+
+//***************************************************************************
+
+function getPickedObject(type) {
+
+	for(var i=objects.length-1;i>=0;i--) {
+		if(type && !(objects[i] instanceof type)) continue;
+		if(!objects[i].valid) continue;
+		if(objects[i].hidden) continue;
+		if(objects[i].isPicked(xclick,yclick))	 {
+				objects[i].xpick = xclick;
+				objects[i].ypick = yclick;
+				return i;
+		}
+	}
+
+	return -1;
+}
+
+//***************************************************************************
+
+function showStatus(msg) {
+
+	var el = document.querySelector("#status span");
+	if(el.innerText!=msg)		
+		el.innerText = msg;
+}
+
+//***************************************************************************
+
+function downloadConfig() {
+
+	var config = [];
+
+	for(var i=0;i<objects.length;i++) {
+		var obj = objects[i];
+		var entry = {};
+		entry.type = obj.constructor.name;
+		entry.builder = obj.builder.constructor.name;
+		entry.name = obj.name;
+		entry.parents = [];
+		for(var j=0;j<obj.builder.parents.length;j++)
+			if(obj.builder.parents[j].name)
+				entry.parents.push(obj.builder.parents[j].name);
+		for(var field in obj)
+			if(typeof(obj[field])=="number")
+				entry[field] = obj[field];
+			else if(typeof(obj[field])=="string")
+				entry[field] = obj[field];
+		config.push(entry);
+	}
+
+	var text = JSON.stringify(config);
+
+	var URL = window.URL || window.webkitURL;
+	var blob = new Blob([text],{type:"application/json"});
+	var url = URL.createObjectURL(blob);
+
+	var a = document.createElement("a");
+	a.style.display = "none";
+	document.body.appendChild(a);
+	a.href = url;
+	a.download = "config.json";
+
+	var me = document.createEvent("MouseEvent");
+	me.initMouseEvent("click",true,true,window,0, 0, 0, 0, 0, false, false, false, false, 0, null);
+	a.dispatchEvent(me);
+        
+	URL.revokeObjectURL(url);
+
+}
+
+//***************************************************************************
+
+function ondrag(event) {
+	event.preventDefault();
+}
+
+//***************************************************************************
+
+function ondrop(event) {
+
+	event.preventDefault();
+
+    if(event.dataTransfer.items)
+        var file = event.dataTransfer.items[0].getAsFile();
+    else
+        var file = event.dataTransfer.files[0];
+
+    var reader = new FileReader();
+    reader.addEventListener("load",onread);
+    reader.addEventListener("error",onerror);
+    reader.readAsText(file);            
+
+    function onread(event) {
+
+        loadConfig(event.target.result);
+        
+    }
+
+    function onerror(err) {
+        alert(err);
+    }
+
+}
+
+//***************************************************************************
+
+function loadConfig(text) {
+
+	try {
+		var config = JSON.parse(text);
+		}
+	catch(err) {
+		alert(err);
+		return;
+	}
+
+	objects = [];
+
+	for(var i=0;i<config.length;i++) {
+		var entry = config[i];
+		try {
+			var obj = eval("new "+entry.type+"()");
+			for(var field in entry) {
+				if(typeof(entry[field])=="number")
+					obj[field] = entry[field];
+				else if(typeof(entry[field])=="string")
+					obj[field] = entry[field]
+				}
+			obj.builder = eval("new "+entry.builder+"()");
+			for(var j=0;j<entry.parents.length;j++) {
+				for(var k=0;k<objects.length;k++) {
+					if(objects[k].name==entry.parents[j])
+						obj.builder.parents.push(objects[k]);
+				}
+			}
+			objects.push(obj);
+		}
+		catch(err) { console.log(err) }	
+	}
+
+	draw();
+
+	updateList();
+}
+
+//***************************************************************************
+
+function updateList() {
+
+	var table = document.querySelector("#list table");
+
+	var html = "";
+	for(var i=0;i<objects.length;i++) {			
+		var obj = objects[i];
+		cl = obj.selected ? "selected":"";
+		html += "<tr data-index='"+i+"' class='"+cl+"''>";
+		html += "<td>"+obj.name+"</td>";
+		html += "<td>"+parentList(obj)+"</td>";
+		html += "<td><span style='background-color:"+obj.color+";'>&nbsp;&nbsp;&nbsp;&nbsp;</span></td>";
+		html += "<td>&nbsp;</td>";
+		html += "</tr>"
+	}
+
+	table.innerHTML = html;
+
+
+	function parentList(obj) {
+		var s = [];
+		for(var i=0;i<obj.builder.parents.length;i++)
+			s.push(obj.builder.parents[i].name);
+		return s.join(",");
+	}
+}
+
+//***************************************************************************
+
+function onlist(event) {
+
+	var target = event.target;
+
+	if(target.tagName=="SPAN") {
+		// click in color
+		var oindex = target.parentElement.parentElement.dataset.index;
+		if(!oindex) return;
+		var r = target.getBoundingClientRect();
+		var palette = document.querySelector("#palette");
+		palette.style.right = ((window.innerWidth-r.x+2)|0)+"px";
+		palette.style.top = ((r.y-2)|0)+"px";
+		palette.style.display = "flex";
+		state = {action:A_COLOR,oindex:oindex};
+		return;
+	}
+	
+	if(target.tagName=="TD")
+		target = target.parentElement;
+
+	if(!target.dataset.index) return;
+
+	for(var i=0;i<objects.length;i++) 
+		objects[i].selected = false;
+
+	objects[parseInt(target.dataset.index)].selected = true;
+
+	draw();
+	updateList();
+	
+}
+
+//***************************************************************************
+
+function onpalette(event) {
+
+	var target = event.target;
+	if(target.tagName!="DIV") return;
+	if(!target.dataset.index) return;
+	
+	var cindex = parseInt(target.dataset.index);
+
+	if(state && state.action==A_COLOR) {	
+		objects[state.oindex].color = COLORS[cindex];
+		state = null;
+		document.querySelector("#palette").style.display = "none";
+	}
+
+	draw();
+	updateList();
+}
+
+//***************************************************************************
+
+</script>
+</html>
+
