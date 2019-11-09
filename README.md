@@ -1,9 +1,5 @@
 # Geometry Construction Set
 
-![screenshot](screenshot.png)
-![demo08](demo08.png)
-![demo17](demo17.png)
-
 With this playground you can verify some fundamental geometric theorems :
 
 * Demo 2: In a triangle the three medians intersect at the same point, the center of gravity.
@@ -18,7 +14,9 @@ With this playground you can verify some fundamental geometric theorems :
 
 * Demo 7: The middle sides of any quadrilateral form the Varignon parallelogram.
 
-* Demo 8: Construction of a pentagon inscribed in a circle.
+* Demo 8: Construction of a pentagon inscribed in a circle:
+
+![demo08](demo08.png)
 
 * Demo 9: In a triangle, the triangle formed by the midpoints of the sides has its sides parallel to the original triangle.
 
@@ -33,3 +31,5 @@ With this playground you can verify some fundamental geometric theorems :
 * Demo 16 : Desargues's theorem.
 
 * Demo 17 : Pappus's theorem.
+
+![demo17](demo17.png)
