@@ -80,11 +80,11 @@ function GPoint(){
 			}
 		else { 
 			if(self.builder instanceof PointBuilder)
-				ctx.strokeCircle(self.x,self.y,4);
+				ctx.strokeCircle(self.x,self.y,3);
 			else if(self.constrained) 
 				ctx.strokeRect(self.x-3,self.y-3,7,7);
 			else
-				ctx.fillCircle(self.x,self.y,4);
+				ctx.fillCircle(self.x,self.y,3);
 		}
 	}
 
@@ -172,6 +172,26 @@ function GSegment() {
 		ctx.moveTo(self.x1,self.y1);
 		ctx.lineTo(self.x2,self.y2);
 		ctx.stroke();
+	}
+
+	self.isPicked = function(x,y) {
+		var xp1 = self.x1-x;
+		var yp1 = self.y1-y;
+		var xp2 = x-self.x2;
+		var yp2 = y-self.y2;
+		var x12 = self.x1-self.x2;
+		var y12 = self.y1-self.y2;
+		
+		var cos1 = ((xp1*x12)+(yp1*y12))/
+				(Math.sqrt(xp1*xp1+yp1*yp1)*Math.sqrt(x12*x12+y12*y12));
+		var cos2 = ((xp2*x12)+(yp2*y12))/
+				(Math.sqrt(xp2*xp2+yp2*yp2)*Math.sqrt(x12*x12+y12*y12));
+		var angle1 = Math.acos(cos1);
+		var angle2 = Math.acos(cos2);
+		
+		if(Math.abs(angle1)>0.02) return false;
+		if(Math.abs(angle2)>0.02) return false;
+		return true;	
 	}
 
 }
@@ -321,8 +341,8 @@ function SegmentBuilder() {
 		var y2 = h/2-8;
 
 		ctx.fillStyle = "white";
-		ctx.fillCircle(x1,y1,4);
-		ctx.fillCircle(x2,y2,4);
+		ctx.fillCircle(x1,y1,3);
+		ctx.fillCircle(x2,y2,3);
 
 		ctx.strokeStyle = GREEN;
 		ctx.lineWidth =2;
@@ -396,8 +416,8 @@ function LineBuilder() {
 		var y2 = h/2-8;
 
 		ctx.fillStyle = "white";
-		ctx.fillCircle(x1,y1,4);
-		ctx.fillCircle(x2,y2,4);
+		ctx.fillCircle(x1,y1,3);
+		ctx.fillCircle(x2,y2,3);
 
 		ctx.strokeStyle = GREEN;
 		ctx.lineWidth =2;
@@ -471,9 +491,9 @@ function ThreePointCircleBuilder() {
 
 	self.drawIcon = function(ctx,w,h) {
 		ctx.fillStyle = "white";
-		ctx.fillCircle(w/2-9,h/2-9,4);
-		ctx.fillCircle(w/2-7,h/2+12,4);
-		ctx.fillCircle(w/2+11,h/2+3,4);
+		ctx.fillCircle(w/2-9,h/2-9,3);
+		ctx.fillCircle(w/2-7,h/2+12,3);
+		ctx.fillCircle(w/2+11,h/2+3,3);
 		ctx.strokeStyle = GREEN;		
 		ctx.strokeCircle(w/2-2,h/2+2,12);
 	}	
@@ -567,8 +587,8 @@ function MiddleBuilder() {
 
 	self.drawIcon = function(ctx,w,h) {
 		ctx.fillStyle = "white";
-		ctx.fillCircle(w/2-10,h/2+10,4);
-		ctx.fillCircle(w/2+10,h/2-10,4);
+		ctx.fillCircle(w/2-10,h/2+10,3);
+		ctx.fillCircle(w/2+10,h/2-10,3);
 		ctx.fillStyle = GREEN;
 		ctx.fillCircle(w/2,h/2,3);
 	}
@@ -614,8 +634,8 @@ function CenteredCircleBuilder() {
 
 	self.drawIcon = function(ctx,w,h) {
 		ctx.fillStyle = "white";
-		ctx.fillCircle(w/2,h/2,4);
-		ctx.fillCircle(w/2+10,h/2+10,4);
+		ctx.fillCircle(w/2,h/2,3);
+		ctx.fillCircle(w/2+10,h/2+10,3);
 		ctx.strokeStyle = GREEN;
 		ctx.strokeCircle(w/2,h/2,14);
 	}
@@ -679,7 +699,7 @@ function PerpendicularBuilder() {
 		ctx.lineWidth =2;
 		ctx.strokeLine(x1-7,y1+5,x2+7,y2-9);
 		ctx.fillStyle = "white";
-		ctx.fillCircle(w/2+12,h/2+12,4);
+		ctx.fillCircle(w/2+12,h/2+12,3);
 
 		ctx.strokeStyle = GREEN;
 		ctx.strokeLine(w/2+13,h/2+13,w/2-13,h/2-13);
@@ -729,7 +749,7 @@ function ParallelBuilder() {
 		ctx.lineWidth =2;		
 		ctx.strokeLine(w/2-16,h/2+3,w/2+3,h/2-16);
 		ctx.fillStyle = "white";
-		ctx.fillCircle(w/2+6,h/2+6,4);
+		ctx.fillCircle(w/2+6,h/2+6,3);
 		ctx.strokeStyle = GREEN;		
 		ctx.strokeLine(w/2-3,h/2+16,w/2+16,h/2-3);
 	}
@@ -811,12 +831,25 @@ function BisectorBuilder() {
 		}
 
 		self.drawIcon = function(ctx,w,h) {
+			var x1 = w/2-11;
+			var y1 = h/2-12;
+			var x2 = w/2+11;
+			var y2 = h/2-12;
+			var x3 = w/2;
+			var y3 = h/2+9;
 			ctx.fillStyle = "white";
-			ctx.fillCircle(w/2-11,h/2-12,4);
-			ctx.fillCircle(w/2+11,h/2-12,4);
-			ctx.fillCircle(w/2,h/2+9,4);		
-			ctx.strokeStyle = GREEN;
+			ctx.fillCircle(x1,y1,3);
+			ctx.fillCircle(x2,y2,3);
+			ctx.fillCircle(x3,y3,3);
+		
+			ctx.strokeStyle = "white";	
 			ctx.lineWidth = 2.5;
+			ctx.setLineDash([3,3]);
+			ctx.strokeLine(x1,y1,x3,y3);
+			ctx.strokeLine(x2,y2,x3,y3);
+
+			ctx.strokeStyle = GREEN;
+			ctx.setLineDash([]);
 			ctx.strokeLine(w/2,h/2-16,w/2,h/2+16);
 		}
 
@@ -848,48 +881,35 @@ function ProjectionBuilder() {
 
 	self.update = function(target) {
 		var point = target;
-		if(self.parents[1] instanceof GLine) {
-			var p1 = self.parents[0];
-			var line2 = self.parents[1];
-			var d = line2.a*line2.a+line2.b*line2.b;
-			point.y = line2.a*(line2.a*p1.y-line2.b*point1.x)-line2.b*line2.c;
-			point.y = point.y/d;
-			point.x = line2.b*(line2.b*p1.x-line2.a*point1.y)-line2.a*line2.c;
-			point.x = point.x/d;
-		}
-
-		if(self.parents[1] instanceof GSegment) {
-			var segment = self.parents[1];			
-			var pa = segment.builder.parents[0];
-			var pb = segment.builder.parents[1];
-			var pc = self.parents[0];
-
-			var a = pb.y-pa.y;
-			var b = pb.x-pa.x;
-			var c = pc.x*(pa.y-pb.y)+pc.y*(pa.x-pb.x);
-			var d = pa.x*(pa.y-pb.y)+pa.y*(pb.x-pa.x);
-
-			point.x = (-c-d)/(a+a);
-			point.y = (d-c)/(b+b);
-			
-		}
+		var p1 = self.parents[0];
+		var line2 = self.parents[1];
+		var d = line2.a*line2.a+line2.b*line2.b;
+		point.y = line2.a*(line2.a*p1.y-line2.b*point1.x)-line2.b*line2.c;
+		point.y = point.y/d;
+		point.x = line2.b*(line2.b*p1.x-line2.a*point1.y)-line2.a*line2.c;
+		point.x = point.x/d;
 	
 		point.valid = (!isNaN(point.x))&&(!isNaN(point.y));	
 		return point.valid;
 	}
 
 	self.drawIcon = function(ctx,w,h) {
+		ctx.fillStyle = "white";
+		ctx.fillCircle(w/2+6,h/2+6,3);
+
 		ctx.strokeStyle = "white";
 		ctx.lineWidth =2;		
-		ctx.strokeLine(w/2-18,h/2+3,w/2+3,h/2-18);
-		ctx.fillStyle = "white";
-		ctx.fillCircle(w/2+6,h/2+6,4);
+		ctx.strokeLine(w/2-18,h/2+6,w/2+6,h/2-18);
+
+		ctx.setLineDash([3,3]);
+		ctx.strokeLine(w/2+6,h/2+6,h/2-6,h/2-6);
+
 		ctx.fillStyle = GREEN;		
-		ctx.fillCircle(w/2-7,h/2-7,3);
+		ctx.fillCircle(w/2-6,h/2-6,3);
 	}
 
 	self.getHelp = function() {
-		return "Build the projection of a point";
+		return "Project a point to a line";
 	}
 }
 
@@ -1020,7 +1040,7 @@ function  PointOnLineBuilder() {
 		ctx.lineWidth = 2;
 		ctx.strokeLine(w/2-14,h/2+14,w/2+14,h/2-14);
 		ctx.fillStyle = "red";
-		ctx.fillCircle(w/2+7,h/2-7,4);
+		ctx.fillCircle(w/2+7,h/2-7,3);
 	}
 
 	self.getHelp = function() {
@@ -1073,7 +1093,7 @@ function PointOnCircleBuilder() {
         ctx.strokeStyle = "white";
         ctx.strokeCircle(w/2,h/2,14);
 		ctx.fillStyle = "red";
-		ctx.fillCircle(w/2+9,h/2+9,4);
+		ctx.fillCircle(w/2+9,h/2+9,3);
 	}
 
 	self.getHelp = function() {
@@ -1141,8 +1161,8 @@ function CircleIntersectionBuilder() {
 		ctx.strokeCircle(w/2-6,h/2+6,12);
 		ctx.strokeCircle(w/2+6,h/2-6,12);
 		ctx.fillStyle = GREEN;
-		ctx.fillCircle(w/2-6,h/2-6,4);
-		ctx.fillCircle(w/2+6,h/2+6,4);
+		ctx.fillCircle(w/2-6,h/2-6,3);
+		ctx.fillCircle(w/2+6,h/2+6,3);
 	}
 
 	self.getHelp = function() {
@@ -1192,12 +1212,16 @@ function TranslationBuilder() {
 		ctx.strokeStyle = "white";
 		ctx.fillStyle = "white";
 		ctx.lineWidth = 2;
-		ctx.fillCircle(w/2-10,h/2-9,4,4);
-		ctx.fillCircle(w/2+11,h/2-9,4,4);
+		ctx.fillCircle(w/2-10,h/2-9,3);
+		ctx.fillCircle(w/2+11,h/2-9,3);
 		ctx.strokeLine(w/2-10,h/2-9,w/2+11,h/2-9);		
-		ctx.fillCircle(w/2-10,h/2+8,4,4);
+		ctx.fillCircle(w/2-10,h/2+8,3);
+
+		ctx.setLineDash([3,3]);
+		ctx.strokeLine(w/2-10,h/2+8,w/2+12,h/2+8);
+
 		ctx.fillStyle = GREEN;
-		ctx.fillCircle(w/2+11,h/2+8,4,4);
+		ctx.fillCircle(w/2+11,h/2+8,3);
 	}
 
 	self.getHelp = function() {
@@ -1210,43 +1234,68 @@ TranslationBuilder.prototype = Object.create(Builder.prototype);
 TranslationBuilder.prototype.constructor = TranslationBuilder;
 
 //****************************************************************************
-/*
-function CircleTangentBuilder() {
+
+function ProjectionOnSegmentBuilder() {
 
 	var self = this;
-	
+
 	Builder.call(this,
-		[GCircle,GPoint],
-		["Select the circle","Select the point"]
+		[GPoint,GSegment],
+		["Select the point to project","Select the segment to project to"]
 	);
 
-		
 	self.build = function() {
-		var target = new GLine();
+		var target = new GPoint();
 		target.builder = self;
 		self.update(target);
 		return target;
 	}
 
 	self.update = function(target) {
-		var line = target;
-		var circle = self.parents[0];
-		var point = self.parents[1];
+		var point = target;
+		var segment = self.parents[1];			
 
-		if(!circle.valid) return point.valid = false;
-		if(!point.valid) return point.valid = false;
+		var pa = segment.builder.parents[0];
+		var pb = segment.builder.parents[1];
+		var pc = self.parents[0];
 
-		// distance from the point to the circle
-		var d = (point.x-circle.xc)*(point.x-circle.xc)+
-			(point.y-circle.yc)*(point.y-circle.yc);
-		if(Math.sqrt(d)<circle.r)
-			return point.valid = false;
+		var a = (pb.x-pa.x);
+		var b = (pb.y-pa.y);
+		var c = -pc.x*a-pc.y*b;
+		var d = -pa.x*b+pa.y*a;
 
+		point.x = (-d*b-c*a)/(a*a+b*b);
+		point.y = (d*a-c*b)/(a*a+b*b);
+	
+		point.valid = (!isNaN(point.x))&&(!isNaN(point.y));	
+		return point.valid;
+	}
+
+	self.drawIcon = function(ctx,w,h) {
+		ctx.fillStyle = "white";
+		ctx.fillCircle(w/2+6,h/2+6,3);
+
+		ctx.strokeStyle = "white";
+		ctx.lineWidth =2;		
+		ctx.strokeLine(w/2-15,h/2+5,w/2+5,h/2-15);
+
+		ctx.fillCircle(w/2-15,h/2+5,3);
+		ctx.fillCircle(w/2+5,h/2-15,3);
+
+		ctx.setLineDash([3,3]);
+		ctx.strokeLine(w/2+6,h/2+6,h/2-7,h/2-7);
+
+		ctx.fillStyle = GREEN;		
+		ctx.fillCircle(w/2-5,h/2-5,3);
+	}
+
+	self.getHelp = function() {
+		return "Project a point to a segment";
 	}
 }
 
-CircleTangentBuilder.prototype = Object.create(Builder.prototype);
-CircleTangentBuilder.prototype.constructor = CircleTangentBuilder;
-*/
+ProjectionOnSegmentBuilder.prototype = Object.create(Builder.prototype);
+ProjectionOnSegmentBuilder.prototype.constructor = ProjectionOnSegmentBuilder;
+
 //****************************************************************************
 

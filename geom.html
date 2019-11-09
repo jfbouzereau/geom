@@ -20,7 +20,7 @@ canvas {
 	position:fixed;
 	top:0px;
 	right:0px;
-	height:220px;
+	height:206px;
 	width:166px;
 	background-color:black;
 	border-left:1px solid white;
@@ -61,7 +61,7 @@ canvas {
 }
 #list {
 	position:fixed;
-	top:220px;
+	top:206px;
 	right:0px;
 	bottom:0px;
 	width:166px;
@@ -142,6 +142,7 @@ canvas {
 		<div class="button" data-builder="Parallel"></div>
 		<div class="button" data-builder="Bisector"></div>
 		<div class="button" data-builder="Projection"></div>
+		<div class="button" data-builder="ProjectionOnSegment"></div>
 		<div class="button" data-builder="LineCircleIntersection"></div>
 		<div class="button" data-builder="CircleIntersection"></div>
 		<div class="button" data-builder="Translation"></div>
@@ -373,7 +374,7 @@ function onmove(event) {
 	}
 	else if(state.action==A_SCROLL) {
 		for(var i=0;i<objects.length;i++)
-			if(objects[i].builder instanceof PointBuilder) {	
+			if(mustScroll(objects[i])) {
 				objects[i].x += xmove-xclick;
 				objects[i].y += ymove-yclick;
 		}
@@ -434,6 +435,15 @@ function onup(event) {
 	state = null;
 
 	draw();
+}
+
+//***************************************************************************
+
+function mustScroll(object) {
+	if(object.builder instanceof PointBuilder) return true;
+	if(object.builder instanceof PointOnCircleBuilder) return true;
+	if(object.builder instanceof PointOnLineBuilder) return true;
+	return false;
 }
 
 //***************************************************************************
