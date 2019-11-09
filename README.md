@@ -28,3 +28,5 @@ With this playground you can verify some fundamental geometric theorems :
 * Demo 12: The perpendiculars to the sides of a quadrilateral passing through the middle of the opposite side intersect at the same point.
 
 * Demo 15: Napoleon's theorem.
+
+* Demo 16 : Desargues's theorem.
