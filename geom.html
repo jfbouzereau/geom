@@ -152,6 +152,7 @@ canvas {
 		<div class="button" data-builder="PointOnLine"></div>
 		<div class="button" data-builder="PointOnCircle"></div>
 		<div class="button" data-builder="Angle"></div>
+		<div class="button" data-builder="Ratio"></div>
 		<div class="bcommand" data-help="Download the config as json file" data-command="download">⬇︎</div>
 	</div>
 	<div id="list">
@@ -282,8 +283,8 @@ function draw() {
 		if(obj.selected && obj instanceof GMeasurer)
 			measurer = obj;
 	}
-	
-	if(measurer) {
+
+	if(measurer && (!state ||(state.action!=A_BUILD))) {
 		showStatus(measurer.getMessage());
 	}
 	
@@ -363,7 +364,6 @@ function ondown(event) {
 	}
 	else if(!state) {
 		var index = getPickedObject(GPoint);
-		console.log("INDEX "+index);
 		if(index>=0)
 			state = {action:A_DRAG,index:index}
 		else 
@@ -668,7 +668,12 @@ function onlist(event) {
 	draw();
 	updateList();
 
-	showStatus("");
+	if(!state) {
+		if(objects[oindex].selected && objects[oindex] instanceof GMeasurer)
+			showStatus(objects[oindex].getMessage());
+		else
+			showStatus("");
+	}
 	
 }
 

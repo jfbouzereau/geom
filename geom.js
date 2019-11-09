@@ -1,5 +1,7 @@
 
 var GREEN = "rgb(128,255,128)";
+var BLUE = "rgb(138,205,249)";
+var BLUE = "rgb(187,226,251)";
 
 CanvasRenderingContext2D.prototype.strokeCircle = function(x,y,r) {
 	this.beginPath();
@@ -258,6 +260,25 @@ function GAngle() {
 	self.value = 0;
 
 	self.draw = function(ctx,width,height) {
+		var pb = self.builder.parents[0];
+		var pa = self.builder.parents[1];
+		var pc = self.builder.parents[2];
+		var po = {x:pa.x+100,y:pa.y};		
+
+		var angle1 = computeAngle(po,pa,pb);
+		var angle2 = computeAngle(pb,pa,pc);
+
+		var radius = self.selected ? 20 : 10;
+
+		ctx.fillStyle = self.color;
+		ctx.beginPath();
+		ctx.moveTo(pa.x,pa.y);
+		if(angle2>0)
+			ctx.arc(pa.x,pa.y,radius,-angle1,-angle1-angle2,true);
+		else
+			ctx.arc(pa.x,pa.y,radius,-angle1-angle2,-angle1,true);
+		ctx.lineTo(pa.x,pa.y);
+		ctx.fill();
 	}
 
 	self.getMessage = function() {
@@ -266,10 +287,51 @@ function GAngle() {
 		return rvalue+" radians   =   "+degrees+" degrees";	
 	}
 
+	function computeAngle(pb,pa,pc) {	
+		var xab = pb.x-pa.x;
+
+		var yab = pb.y-pa.y;
+		var xac = pc.x-pa.x;
+		var yac = pc.y-pa.y;
+
+		var num = (xab*xac)+(yab*yac);
+		var den1 = (xab*xab)+(yab*yab);
+		var den2 = (xac*xac)+(yac*yac);
+
+		var cos = num/(Math.sqrt(den1)*Math.sqrt(den2))
+		var cross = xab*yac-xac*yab;
+		
+		return cross <0 ? Math.acos(cos) : -Math.acos(cos);
+	}
+
 }
 
 GAngle.prototype = Object.create(GMeasurer.prototype);
 GAngle.prototype.constructor = GAngle;
+
+//****************************************************************************
+
+function GRatio() {
+
+	var self = this;
+
+	GMeasurer.call(self);
+
+	self.value = 0;
+
+	self.name = "R"+self.getId();
+
+	self.draw = function() {}
+
+	self.getMessage = function() {
+		var ratio = ((self.value*10000)|0)/10000;
+		return "Ratio = "+ratio;
+	}
+	
+}
+
+GRatio.prototype = Object.create(GMeasurer.prototype);
+GRatio.prototype.constructor = GRatio;
 
 //****************************************************************************
 //****************************************************************************
@@ -1487,6 +1549,7 @@ function AngleBuilder() {
 		var cross = xab*yac-xac*yab;
 		
 		angle.value = cross <0 ? Math.acos(cos) : -Math.acos(cos);
+		return true;
 	}
 
 	self.drawIcon = function(ctx,w,h) {
@@ -1501,7 +1564,7 @@ function AngleBuilder() {
 		ctx.fillCircle(x2,y2,3);
 		ctx.fillCircle(x3,y3,3);
 
-		ctx.fillStyle = GREEN;
+		ctx.fillStyle = BLUE;
 		ctx.beginPath();
 		ctx.moveTo(x3,y3);
 		ctx.arc(x3,y3,18,-Math.PI*0.32,-0.67*Math.PI,true);
@@ -1608,6 +1671,62 @@ function SquareBuilder() {
 
 SquareBuilder.prototype = Object.create(Builder.prototype);
 SquareBuilder.prototype.constructor = SquareBuilder;
+
+//****************************************************************************
+
+function RatioBuilder() {
+
+	var self = this;
+
+	Builder.call(self,
+		[GSegment,GSegment],
+		["Select the unit segment","Select the measured segment"]
+	);
+
+	self.build = function() {
+		var target = new GRatio();
+		target.builder = self;
+		self.update(target);
+		return target;
+	}
+
+	self.update = function(target) {
+		var ratio = target;
+		var segment1 = self.parents[0];
+		var segment2 = self.parents[1];
+
+		var pa1 = segment1.builder.parents[0];
+		var pb1 = segment1.builder.parents[1];
+
+		var pa2 = segment2.builder.parents[0];
+		var pb2 = segment2.builder.parents[1];
+
+		ratio.value = norm(pa2,pb2)/norm(pa1,pb1);
+		return true;
+	}
+
+	function norm(pa,pb) {
+		return Math.sqrt((pa.x-pb.x)*(pa.x-pb.x)+(pa.y-pb.y)*(pa.y-pb.y));
+	}
+
+	self.drawIcon = function(ctx,w,h) {
+		ctx.strokeStyle = BLUE;
+		ctx.lineWidth = 2;
+		ctx.strokeLine(w/2-17,h/2+3,w/2+16,h/2+3);
+		for(var i=0;i<=6;i++) {
+			var x = (w/2-17+33*i/6)|0;
+			var z = (i%3)==0 ? 6 : 3;
+			ctx.strokeLine(x,h/2+3,x,h/2-z);
+		}
+	}
+
+	self.getHelp = function() {
+		return "Compute the ratio of segment lengths"
+	}
+}
+
+RatioBuilder.prototype = Object.create(Builder.prototype);
+RatioBuilder.prototype.constructor = RatioBuilder;
 
 //****************************************************************************
 
