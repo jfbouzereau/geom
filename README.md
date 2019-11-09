@@ -2,6 +2,7 @@
 
 ![screenshot](screenshot.png)
 ![demo08](demo08.png)
+![demo17](demo17.png)
 
 With this playground you can verify some fundamental geometric theorems :
 
