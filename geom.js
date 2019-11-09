@@ -1575,6 +1575,30 @@ function SquareBuilder() {
 	}
 
 	self.drawIcon = function(ctx,w,h) {
+		var x1 = w/2-10;
+		var y1 = h/2-10;
+		var x2 = w/2+10;
+		var y2 = h/2+10;
+		var x3 = w/2-10;
+		var y3 = h/2+10;
+		var x4 = w/2+10;
+		var y4 = h/2-10;
+		ctx.fillStyle = "white";
+		ctx.fillCircle(x3,y3,3);
+		ctx.fillCircle(x2,y2,3);
+	
+		ctx.strokeStyle = "white";
+		ctx.lineWidth = 2;
+		ctx.strokeLine(x3,y3,x2,y2);
+
+		ctx.setLineDash([3,3]);
+		ctx.strokeLine(x2,y2,x4,y4);
+		ctx.strokeLine(x4,y4,x1,y1);
+		ctx.strokeLine(x1,y1,x3,y3);
+	
+		ctx.fillStyle = GREEN;
+		ctx.fillCircle(x1,y1,3);
+		ctx.fillCircle(x4,y4,3);
 	}
 
 	self.getHelp = function() {
