@@ -70,8 +70,13 @@ canvas {
 	padding:0px;
 	background-color:black;
 }
-#list table {
-	position:absolute;	
+#list div {
+	overflow:scroll;
+	width:100%;	
+	min-height:0;
+	max-height:100%;
+}
+#list div table {
 	left:2px;
 	top:0px;
 	width:100%;
@@ -79,10 +84,10 @@ canvas {
 	font-size:12px;
 	border-collapse:collapse;
 }
-#list table tr {
+#list div table tr {
 	height:18px;
 }
-#list table tr td {
+#list div table tr td {
 	height:15px;
 	padding:0px;
 	margin:0px;
@@ -91,9 +96,9 @@ canvas {
 	color:white;
 	background-color:black;
 }
-#list table tr.selected td {
+#list div table tr.selected td {
 	color:black;
-	background-color:white;
+	background-color:#888;
 }
 #status {
 	position:fixed;
@@ -145,7 +150,9 @@ canvas {
 		<div class="bcommand" data-help="Download the config as json file" data-command="download">⬇︎</div>
 	</div>
 	<div id="list">
-		<table></table>
+		<div>
+			<table></table>
+		</div>
 	</div>
 	<div id="status">
 		<span></span>
@@ -168,7 +175,6 @@ var COLORS = [
 	"rgb(0,255,0)","rgb(0,255,255)","rgb(0,0,255)","rgb(180,0,255)",
 	"rgb(255,128,255)"];
 
-var xscroll=0, yscroll=0;
 
 var state = null;
 
@@ -258,9 +264,6 @@ function draw() {
 	ctx.fillStyle = "#000";
 	ctx.fillRect(0,0,canvas.width,canvas.height);
 
-	ctx.save();
-	ctx.translate(xscroll,yscroll);
-
 	for(var i=0;i<objects.length;i++) {
 		var obj = objects[i];
 		obj.valid = obj.builder.update(obj);
@@ -271,7 +274,6 @@ function draw() {
 		}
 	}
 		
-	ctx.restore();
 }
 
 //***************************************************************************
@@ -351,12 +353,8 @@ function ondown(event) {
 		console.log("INDEX "+index);
 		if(index>=0)
 			state = {action:A_DRAG,index:index}
-		/*
-		else {
+		else 
 			state = {action:A_SCROLL};
-			console.log("SCROLL");
-		}
-		*/
 	}
 
 	draw();
@@ -374,8 +372,11 @@ function onmove(event) {
 		point.y = ymove;
 	}
 	else if(state.action==A_SCROLL) {
-		xscroll += xmove-xclick;
-		yscroll += ymove-yclick;
+		for(var i=0;i<objects.length;i++)
+			if(objects[i].builder instanceof PointBuilder) {	
+				objects[i].x += xmove-xclick;
+				objects[i].y += ymove-yclick;
+		}
 		xclick = xmove;
 		yclick = ymove;
 	}
@@ -617,7 +618,7 @@ function onlist(event) {
 	var target = event.target;
 
 	if(target.tagName=="SPAN") {
-		// click in color
+		// click in color, show the palette
 		var oindex = target.parentElement.parentElement.dataset.index;
 		if(!oindex) return;
 		var r = target.getBoundingClientRect();
@@ -634,10 +635,13 @@ function onlist(event) {
 
 	if(!target.dataset.index) return;
 
-	for(var i=0;i<objects.length;i++) 
-		objects[i].selected = false;
+	var oindex = parseInt(target.dataset.index);
 
-	objects[parseInt(target.dataset.index)].selected = true;
+	for(var i=0;i<objects.length;i++) 
+		if(i!=oindex)		
+			objects[i].selected = false;
+
+	objects[oindex].selected = !objects[oindex].selected;
 
 	draw();
 	updateList();
