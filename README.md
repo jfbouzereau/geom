@@ -30,3 +30,5 @@ With this playground you can verify some fundamental geometric theorems :
 * Demo 15: Napoleon's theorem.
 
 * Demo 16 : Desargues's theorem.
+
+* Demo 17 : Pappus's theorem.
