@@ -55,6 +55,21 @@ GObject.gid = 0;
 
 //****************************************************************************
 
+function GMeasurer() {
+
+	self = this;
+
+	GObject.call(this);
+
+	self.getMessage = function() { return ""}
+
+}
+
+GMeasurer.prototype = Object.create(GObject.prototype);
+GMeasurer.prototype.constructor = GMeasurer;
+
+//****************************************************************************
+
 function GPoint(){
 	
 	var self = this;
@@ -155,7 +170,7 @@ function GSegment() {
 
 	var self = this;
 
-	GObject.call(this);
+	GObject.call(self);
 
 	self.name = "S"+self.getId();
 
@@ -229,6 +244,32 @@ function GCircle() {
 
 GCircle.prototype = Object.create(GObject.prototype);
 GCircle.prototype.constructor = GCircle;
+
+//****************************************************************************
+
+function GAngle() {
+
+	var self = this;
+		
+	GMeasurer.call(self);
+
+	self.name = "A"+self.getId();
+
+	self.value = 0;
+
+	self.draw = function(ctx,width,height) {
+	}
+
+	self.getMessage = function() {
+		var rvalue = ((self.value*10000)|0)/10000;
+		var degrees = ((self.value*180/Math.PI*10000)|0)/10000;
+		return rvalue+" radians   =   "+degrees+" degrees";	
+	}
+
+}
+
+GAngle.prototype = Object.create(GMeasurer.prototype);
+GAngle.prototype.constructor = GAngle;
 
 //****************************************************************************
 //****************************************************************************
@@ -366,7 +407,7 @@ function LineBuilder() {
 
 	var self = this;
 
-	Builder.call(this,
+	Builder.call(self,
 		[GPoint,GPoint],
 		["Select the first point","Select the second point"]
 	);
@@ -562,7 +603,7 @@ function MiddleBuilder() {
 
 	var self = this;
 
-	Builder.call(this,		
+	Builder.call(self,
 		[GPoint,GPoint],
 		["Select the 1st point","Select the 2nd point"]
 	);
@@ -720,7 +761,7 @@ function ParallelBuilder() {
 
 	var self = this;
 
-	Builder.call(this,
+	Builder.call(self,
 		[GLine,GPoint],
 		["Select the line","Select the point"]
 	);
@@ -867,7 +908,7 @@ function ProjectionBuilder() {
 
 	var self = this;
 
-	Builder.call(this,
+	Builder.call(self,
 		[GPoint,GLine],
 		["Select the point to project","Select the line to project to"]
 	);
@@ -1002,7 +1043,7 @@ function  PointOnLineBuilder() {
 
 	var self = this;
 
-	Builder.call(this,
+	Builder.call(self,
 		[GLine],
 		["Select the line"]
 	);
@@ -1180,7 +1221,7 @@ function TranslationBuilder() {
 
 	var self = this;
 
-	Builder.call(this,
+	Builder.call(self,
 		[GSegment,GPoint],
 		["Select the translation segment","Select the point to be translated"]
 	);
@@ -1239,7 +1280,7 @@ function ProjectionOnSegmentBuilder() {
 
 	var self = this;
 
-	Builder.call(this,
+	Builder.call(self,
 		[GPoint,GSegment],
 		["Select the point to project","Select the segment to project to"]
 	);
@@ -1296,6 +1337,253 @@ function ProjectionOnSegmentBuilder() {
 
 ProjectionOnSegmentBuilder.prototype = Object.create(Builder.prototype);
 ProjectionOnSegmentBuilder.prototype.constructor = ProjectionOnSegmentBuilder;
+
+//****************************************************************************
+
+function EquilateralBuilder() {
+
+	var self = this;
+
+	Builder.call(self,	
+		[GSegment],
+		["Select the base segment"]
+	);
+
+	
+	self.build = function() {
+		var target = new GPoint();
+		target.builder = self;
+		self.update(target);
+		return target;
+	}
+
+	self.update = function(target) {
+		var point = target;
+		var segment = self.parents[0];
+
+		var pa = segment.builder.parents[0];
+		var pb = segment.builder.parents[1];
+
+		var vx = pb.x-pa.x;
+		var vy = pb.y-pa.y;
+
+		var newx = vx/2+vy*Math.sqrt(3)/2;
+		var newy = vy/2-vx*Math.sqrt(3)/2;
+	
+		point.x = newx + pa.x;
+		point.y = newy + pa.y;
+	
+		point.valid = (!isNaN(point.x))&&(!isNaN(point.y));	
+		return point.valid;
+	}
+
+	self.drawIcon = function(ctx,w,h) {
+		ctx.fillStyle = "white";
+		ctx.strokeStyle = "white";
+		ctx.fillCircle(w/2-11,h/2+7,3);
+		ctx.fillCircle(w/2+11,h/2+7,3);
+		ctx.lineWidth = 2;
+		ctx.strokeLine(w/2-11,h/2+7,w/2+11,h/2+7);
+
+		ctx.setLineDash([3,3]);
+		ctx.strokeLine(w/2-11,h/2+7,w/2,h/2-9);
+		ctx.strokeLine(w/2+11,h/2+7,w/2,h/2-9);
+
+		ctx.fillStyle = GREEN;
+		ctx.fillCircle(w/2,h/2-9,3);
+	}
+
+	self.getHelp = function() {
+		return "Build an equilateral triangle from a segment";
+	}
+}
+
+EquilateralBuilder.prototype = Object.create(Builder.prototype);
+EquilateralBuilder.prototype.constructor = EquilateralBuilder;
+
+//****************************************************************************
+
+function CircleCenterBuilder() {
+
+	var self = this;
+
+	Builder.call(self,
+		[GCircle],
+		["Select the circle"]
+	);
+
+	self.build = function() {
+		var target = new GPoint();
+		target.builder = self;
+		self.update(target);
+		return target;
+	}
+
+	self.update = function(target) {
+		var point = target;
+		var circle = self.parents[0];
+
+		if(!circle.valid) return point.valid = false;
+
+		point.x = circle.x;
+		point.y = circle.y;
+	
+		return true;
+	}
+
+
+	self.drawIcon = function(ctx,w,h) {
+		ctx.strokeStyle = "white";
+		ctx.strokeCircle(w/2,h/2,14);
+		ctx.fillStyle = GREEN;
+		ctx.fillCircle(w/2,h/2,3);
+	}
+
+	self.getHelp = function() {
+		return "Build the center of a circle";
+	}
+
+}
+
+CircleCenterBuilder.prototype = Object.create(Builder.prototype);
+CircleCenterBuilder.prototype.constructor = CircleCenterBuilder;
+
+//****************************************************************************
+
+function AngleBuilder() {
+
+	var self = this;
+
+	Builder.call(self,
+		[GPoint,GPoint,GPoint],		
+		["Select the 1st point","Select the 2n point","Select the 3rd point"]
+	);
+
+	
+	self.build = function() {
+		var target = new GAngle();
+		target.builder = self;
+		self.update(target);
+		return target;
+	}
+
+	self.update = function(target) {
+		var angle = target;
+		var pb = self.parents[0];
+		var pa = self.parents[1];
+		var pc = self.parents[2];
+		var xab = pb.x-pa.x;
+
+		var yab = pb.y-pa.y;
+		var xac = pc.x-pa.x;
+		var yac = pc.y-pa.y;
+
+		var num = (xab*xac)+(yab*yac);
+		var den1 = (xab*xab)+(yab*yab);
+		var den2 = (xac*xac)+(yac*yac);
+
+		var cos = num/(Math.sqrt(den1)*Math.sqrt(den2))
+		
+		var cross = xab*yac-xac*yab;
+		
+		angle.value = cross <0 ? Math.acos(cos) : -Math.acos(cos);
+	}
+
+	self.drawIcon = function(ctx,w,h) {
+		var x1 = w/2-11;
+		var y1 = h/2-12;
+		var x2 = w/2+11;
+		var y2 = h/2-12;
+		var x3 = w/2;
+		var y3 = h/2+9;
+		ctx.fillStyle = "white";
+		ctx.fillCircle(x1,y1,3);
+		ctx.fillCircle(x2,y2,3);
+		ctx.fillCircle(x3,y3,3);
+
+		ctx.fillStyle = GREEN;
+		ctx.beginPath();
+		ctx.moveTo(x3,y3);
+		ctx.arc(x3,y3,18,-Math.PI*0.32,-0.67*Math.PI,true);
+		ctx.lineTo(x3,y3);
+		ctx.fill();
+
+		ctx.strokeStyle = "white";
+		ctx.lineWidth = 2.5;
+		ctx.setLineDash([3,3]);
+		ctx.strokeLine(x1,y1,x3,y3);
+		ctx.strokeLine(x2,y2,x3,y3);
+
+	}
+
+	self.getHelp = function() {
+		return "Measure an angle";
+	}
+}
+
+AngleBuilder.prototype = Object.create(Builder.prototype);
+AngleBuilder.prototype.constructor = AngleBuilder;
+
+//****************************************************************************
+
+function SquareBuilder() {
+
+	var self = this;
+	
+	Builder.call(self,
+		[GSegment],
+		["Select the base segment"]
+	);
+
+	self.build = function() {
+		var point1= new GPoint();
+		point1.builder = self;
+		point1.data = 0;
+	
+		var point2 = new GPoint();
+		point2.builder = self;
+		point2.data = 1;
+
+		var target = [point1,point2];
+
+		self.update(point1);
+		self.update(point2);
+
+		return target;
+	}
+
+	self.update = function(target) {
+	
+		var point = target;
+		var segment = self.parents[0];
+	
+		var pa = segment.builder.parents[0];
+		var pb = segment.builder.parents[1];
+
+		var dx = pb.x-pa.x;
+		var dy = pb.y-pa.y;
+
+		if(point.data==0) {
+			point.x = pb.x + dy;
+			point.y = pb.y - dx;
+		} else {
+			point.x = pb.x + dy -dx;
+			point.y = pb.y - dx -dy;
+		}
+		
+		return true;
+	}
+
+	self.drawIcon = function(ctx,w,h) {
+	}
+
+	self.getHelp = function() {
+		return "Build a square from a segment";
+	}
+}
+
+SquareBuilder.prototype = Object.create(Builder.prototype);
+SquareBuilder.prototype.constructor = SquareBuilder;
 
 //****************************************************************************
 

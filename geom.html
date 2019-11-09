@@ -20,7 +20,7 @@ canvas {
 	position:fixed;
 	top:0px;
 	right:0px;
-	height:206px;
+	height:247px;
 	width:166px;
 	background-color:black;
 	border-left:1px solid white;
@@ -61,7 +61,7 @@ canvas {
 }
 #list {
 	position:fixed;
-	top:206px;
+	top:247px;
 	right:0px;
 	bottom:0px;
 	width:166px;
@@ -146,8 +146,12 @@ canvas {
 		<div class="button" data-builder="LineCircleIntersection"></div>
 		<div class="button" data-builder="CircleIntersection"></div>
 		<div class="button" data-builder="Translation"></div>
+		<div class="button" data-builder="Equilateral"></div>
+		<div class="button" data-builder="Square"></div>
+		<div class="button" data-builder="CircleCenter"></div>
 		<div class="button" data-builder="PointOnLine"></div>
 		<div class="button" data-builder="PointOnCircle"></div>
+		<div class="button" data-builder="Angle"></div>
 		<div class="bcommand" data-help="Download the config as json file" data-command="download">⬇︎</div>
 	</div>
 	<div id="list">
@@ -265,6 +269,8 @@ function draw() {
 	ctx.fillStyle = "#000";
 	ctx.fillRect(0,0,canvas.width,canvas.height);
 
+	var measurer = null;
+
 	for(var i=0;i<objects.length;i++) {
 		var obj = objects[i];
 		obj.valid = obj.builder.update(obj);
@@ -273,8 +279,14 @@ function draw() {
 			obj.draw(ctx,width,height);
 			ctx.restore();
 		}
+		if(obj.selected && obj instanceof GMeasurer)
+			measurer = obj;
 	}
-		
+	
+	if(measurer) {
+		showStatus(measurer.getMessage());
+	}
+	
 }
 
 //***************************************************************************
@@ -655,6 +667,8 @@ function onlist(event) {
 
 	draw();
 	updateList();
+
+	showStatus("");
 	
 }
 
