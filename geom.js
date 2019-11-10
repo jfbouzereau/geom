@@ -1233,7 +1233,7 @@ function  PointOnSegmentBuilder() {
 	}
 
 	self.getHelp = function() {
-		return "Constraint a point on a segment";
+		return "Constrain a point on a segment";
 	}
 }
 
@@ -1306,7 +1306,7 @@ function  PointOnLineBuilder() {
 	}
 
 	self.getHelp = function() {
-		return "Constraint a point on a line";
+		return "Constrain a point on a line";
 	}
 }
 
@@ -1359,7 +1359,7 @@ function PointOnCircleBuilder() {
 	}
 
 	self.getHelp = function() {
-		return "Constraint a point on a circle";
+		return "Constrain a point on a circle";
 	}
 
 }
