@@ -282,8 +282,8 @@ function GAngle() {
 	}
 
 	self.getMessage = function() {
-		var rvalue = ((self.value*10000)|0)/10000;
-		var degrees = ((self.value*180/Math.PI*10000)|0)/10000;
+		var rvalue = (Math.round(self.value*1000)|0)/1000;
+		var degrees = (Math.round(self.value*180/Math.PI*1000)|0)/1000;
 		return rvalue+" radians   =   "+degrees+" degrees";	
 	}
 
@@ -594,9 +594,9 @@ function ThreePointCircleBuilder() {
 
 	self.drawIcon = function(ctx,w,h) {
 		ctx.fillStyle = "white";
-		ctx.fillCircle(w/2-9,h/2-9,3);
+		ctx.fillCircle(w/2-9,h/2-8,3);
 		ctx.fillCircle(w/2-7,h/2+12,3);
-		ctx.fillCircle(w/2+11,h/2+3,3);
+		ctx.fillCircle(w/2+10,h/2+3,3);
 		ctx.strokeStyle = GREEN;		
 		ctx.strokeCircle(w/2-2,h/2+2,12);
 	}	
@@ -644,8 +644,9 @@ function LineIntersectionBuilder() {
 	self.drawIcon = function(ctx,w,h) {
 		ctx.strokeStyle = "white";
 		ctx.lineWidth = 2;
-		ctx.strokeLine(w/2-10,h/2-14,w/2+10,h/2+14);
+		ctx.strokeLine(w/2-6,h/2-14,w/2+6,h/2+14);
 		ctx.strokeLine(w/2-14,h/2+14,w/2+14,h/2-14);
+
 		ctx.fillStyle = GREEN;
 		ctx.fillCircle(w/2,h/2,3);
 	}
@@ -802,14 +803,14 @@ function PerpendicularBuilder() {
 		ctx.lineWidth =2;
 		ctx.strokeLine(x1-7,y1+5,x2+7,y2-9);
 		ctx.fillStyle = "white";
-		ctx.fillCircle(w/2+12,h/2+12,3);
+		ctx.fillCircle(w/2+8,h/2+8,3);
 
 		ctx.strokeStyle = GREEN;
 		ctx.strokeLine(w/2+13,h/2+13,w/2-13,h/2-13);
 	}
 
 	self.getHelp = function() {
-		return "Build a perpendicular through a point";
+		return "Build a perpendicular line through a point";
 	}
 
 }
@@ -858,7 +859,7 @@ function ParallelBuilder() {
 	}
 
 	self.getHelp = function() {
-		return "Build a parallel through a point";
+		return "Build a parallel line through a point";
 	}
 }
 
@@ -1084,7 +1085,7 @@ function LineCircleIntersectionBuilder() {
 		ctx.strokeStyle = "white";
 		ctx.strokeCircle(w/2,h/2,14);
 		ctx.lineWidth = 2;
-		ctx.strokeLine(w/2-10,h/2+18,w/2+18,h/2-10);	
+		ctx.strokeLine(w/2-10,h/2+17,w/2+17,h/2-10);	
 		ctx.fillStyle = GREEN;
 		ctx.fillCircle(w/2-6,h/2+12,3);
 		ctx.fillCircle(w/2+12,h/2-6,3);
@@ -1319,7 +1320,7 @@ function PointOnCircleBuilder() {
         ctx.strokeStyle = "white";
         ctx.strokeCircle(w/2,h/2,14);
 		ctx.fillStyle = "red";
-		ctx.fillCircle(w/2+9,h/2+9,3);
+		ctx.fillCircle(w/2+10,h/2+10,3);
 	}
 
 	self.getHelp = function() {
@@ -1833,18 +1834,22 @@ function RatioBuilder() {
 	}
 
 	self.drawIcon = function(ctx,w,h) {
+		var x1 = w/2-9;
+		var y1 = h/2+9;
+		var x2 = w/2+9;
+		var y2 = h/2-9;
+
+		ctx.fillStyle = "white";
+		ctx.fillCircle(x1,y1,3);
+		ctx.fillCircle(x2,y2,3);
+			
 		ctx.strokeStyle = BLUE;
-		ctx.lineWidth = 2;
-		ctx.strokeLine(w/2-17,h/2+3,w/2+16,h/2+3);
-		for(var i=0;i<=6;i++) {
-			var x = (w/2-17+33*i/6)|0;
-			var z = (i%3)==0 ? 6 : 3;
-			ctx.strokeLine(x,h/2+3,x,h/2-z);
-		}
+		ctx.lineWidth =2;
+		ctx.strokeLine(x1,y1,x2,y2);
 	}
 
 	self.getHelp = function() {
-		return "Compute the ratio of segment lengths"
+		return "Measure a segment"
 	}
 }
 

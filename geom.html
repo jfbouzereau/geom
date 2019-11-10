@@ -117,6 +117,10 @@ canvas {
 	font-weight:100;
 	color:#FFF;
 }
+#status span {	
+	width:100%
+	text-align:center;
+}
 #palette {
 	display:none;
 	position:fixed;
@@ -372,7 +376,7 @@ function ondown(event) {
 		state.index = getPickedObject();
 	}
 	else if(!state) {
-		var index = getPickedObject(GPoint);
+		var index = getPickedObject(GPoint,true);
 		if(index>=0) {
 			delete objects[index].data;	// allow object to be dragged
 			state = {action:A_DRAG,index:index}
@@ -471,13 +475,13 @@ function mustScroll(object) {
 
 //***************************************************************************
 
-function getPickedObject(type) {
+function getPickedObject(type,tobemoved) {
 
 	for(var i=objects.length-1;i>=0;i--) {
 		if(type && !(objects[i] instanceof type)) continue;
 		if(!objects[i].valid) continue;
 		if(objects[i].hidden) continue;
-		if((GPoint==type)&&!mustScroll(objects[i])) continue;
+		if(tobemoved&&!mustScroll(objects[i])) continue;
 		if(objects[i].isPicked(xclick,yclick))	 {
 			objects[i].xpick = xclick;
 			objects[i].ypick = yclick;
@@ -494,7 +498,7 @@ function showStatus(msg) {
 
 	var el = document.querySelector("#status span");
 	if(el.innerText!=msg)		
-		el.innerText = msg;
+		el.innerText = "  "+msg+"  ";
 }
 
 //***************************************************************************
