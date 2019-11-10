@@ -149,6 +149,7 @@ canvas {
 		<div class="button" data-builder="Equilateral"></div>
 		<div class="button" data-builder="Square"></div>
 		<div class="button" data-builder="CircleCenter"></div>
+		<div class="button" data-builder="PointOnSegment"></div>
 		<div class="button" data-builder="PointOnLine"></div>
 		<div class="button" data-builder="PointOnCircle"></div>
 		<div class="button" data-builder="Angle"></div>
@@ -177,7 +178,7 @@ var A_SCROLL = ++ACTION;
 
 
 var COLORS = [
-	"rgb(128,128,128)","rgb(255,255,255)","rgb(255,0,0)","rgb(255,150,0)","rgb(255,255,0)",
+	"rgb(64,64,64)","rgb(255,255,255)","rgb(255,0,0)","rgb(255,150,0)","rgb(255,255,0)",
 	"rgb(0,255,0)","rgb(0,255,255)","rgb(0,0,255)","rgb(180,0,255)",
 	"rgb(255,128,255)"];
 
@@ -196,6 +197,7 @@ window.addEventListener("resize",draw);
 
 document.querySelector("#control").addEventListener("click",oncontrol);
 document.querySelector("#control").addEventListener("mousemove",onhelp);
+document.querySelector("#control").addEventListener("mouseleave",onquithelp);
 
 canvas.addEventListener("mousedown",ondown);
 canvas.addEventListener("mousemove",onmove);
@@ -346,6 +348,13 @@ function onhelp(event) {
 
 //***************************************************************************
 
+function onquithelp() {
+	if(state) return;
+	showStatus("");
+}
+
+//***************************************************************************
+
 var xclick,yclick,xmove,ymove;
 
 function ondown(event) {
@@ -364,8 +373,10 @@ function ondown(event) {
 	}
 	else if(!state) {
 		var index = getPickedObject(GPoint);
-		if(index>=0)
+		if(index>=0) {
+			delete objects[index].data;	// allow object to be dragged
 			state = {action:A_DRAG,index:index}
+		}
 		else 
 			state = {action:A_SCROLL};
 	}
@@ -379,8 +390,9 @@ function onmove(event) {
 	xmove = event.clientX;
 	ymove = event.clientY;
 	
-	if(state.action == A_DRAG) {
+	if(state.action == A_DRAG) {	
 		var point = objects[state.index];
+		delete point.data;
 		point.x = xmove;
 		point.y = ymove;
 	}
@@ -453,8 +465,7 @@ function onup(event) {
 
 function mustScroll(object) {
 	if(object.builder instanceof PointBuilder) return true;
-	if(object.builder instanceof PointOnCircleBuilder) return true;
-	if(object.builder instanceof PointOnLineBuilder) return true;
+	if(object.constrained) return true;
 	return false;
 }
 
@@ -466,10 +477,11 @@ function getPickedObject(type) {
 		if(type && !(objects[i] instanceof type)) continue;
 		if(!objects[i].valid) continue;
 		if(objects[i].hidden) continue;
+		if((GPoint==type)&&!mustScroll(objects[i])) continue;
 		if(objects[i].isPicked(xclick,yclick))	 {
-				objects[i].xpick = xclick;
-				objects[i].ypick = yclick;
-				return i;
+			objects[i].xpick = xclick;
+			objects[i].ypick = yclick;
+			return i;
 		}
 	}
 
@@ -505,6 +517,8 @@ function downloadConfig() {
 			if(typeof(obj[field])=="number")
 				entry[field] = obj[field];
 			else if(typeof(obj[field])=="string")
+				entry[field] = obj[field];
+			else if(typeof(obj[field])=="boolean")
 				entry[field] = obj[field];
 		config.push(entry);
 	}
@@ -586,8 +600,14 @@ function loadConfig(text) {
 					obj[field] = entry[field];
 				else if(typeof(entry[field])=="string")
 					obj[field] = entry[field]
+				else if(typeof(entry[field])=="boolean")
+					obj[field] = entry[field]
 				}
+
 			obj.builder = eval("new "+entry.builder+"()");
+			if(entry.builder.indexOf("PointOn")>=0)
+				obj.constrained = true;
+
 			for(var j=0;j<entry.parents.length;j++) {
 				for(var k=0;k<objects.length;k++) {
 					if(objects[k].name==entry.parents[j])
@@ -602,6 +622,7 @@ function loadConfig(text) {
 	draw();
 
 	updateList();
+
 }
 
 //***************************************************************************
@@ -640,15 +661,20 @@ function onlist(event) {
 	var target = event.target;
 
 	if(target.tagName=="SPAN") {
-		// click in color, show the palette
+		// click in color, show / hide the palette
+		var palette = document.querySelector("#palette");
 		var oindex = target.parentElement.parentElement.dataset.index;
 		if(!oindex) return;
-		var r = target.getBoundingClientRect();
-		var palette = document.querySelector("#palette");
-		palette.style.right = ((window.innerWidth-r.x+2)|0)+"px";
-		palette.style.top = ((r.y-2)|0)+"px";
-		palette.style.display = "flex";
-		state = {action:A_COLOR,oindex:oindex};
+		if(palette.style.display=="flex") {
+			palette.style.display = "none";
+		} 	
+		else {
+			var r = target.getBoundingClientRect();
+			palette.style.right = ((window.innerWidth-r.x+2)|0)+"px";
+			palette.style.top = ((r.y-2)|0)+"px";
+			palette.style.display = "flex";
+			state = {action:A_COLOR,oindex:oindex};
+		}
 		return;
 	}
 	

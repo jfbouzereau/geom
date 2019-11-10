@@ -1101,6 +1101,111 @@ LineCircleIntersectionBuilder.prototype.constructor = LineCircleIntersectionBuil
 
 //****************************************************************************
 
+function  PointOnSegmentBuilder() {
+
+	var self = this;
+
+	Builder.call(self,
+		[GSegment],
+		["Select the segment"]
+	);
+
+	
+	self.build = function() {
+		var target = new GPoint();
+		target.builder = self;
+		var line = self.parents[0];
+		target.x = line.xpick;
+		target.y = line.ypick;
+		target.constrained = true;
+		self.update(target);
+		return target;
+	}
+
+	self.update = function(target) {
+		var point = target;
+
+		var segment = self.parents[0];
+		if(!segment.valid) return point.valid = false;
+
+		var pa = segment.builder.parents[0];
+		var pb = segment.builder.parents[1];
+
+		if(point.data) {
+			// keep the same ratio
+			point.x = pa.x + point.data*(pb.x-pa.x);
+			point.y = pa.y + point.data*(pb.y-pa.y);
+		}
+		else {
+			var a = (pb.x-pa.x);
+			var b = (pb.y-pa.y);
+			var c = -point.x*a-point.y*b;
+			var d = -pa.x*b+pa.y*a;
+			
+			var x = (-d*b-c*a)/(a*a+b*b);
+			var y = (d*a-c*b)/(a*a+b*b);
+
+			var da = (x-pa.x)*(x-pa.x)+(y-pa.y)*(y-pa.y);
+			var db = (x-pb.x)*(x-pb.x)+(y-pb.y)*(y-pb.y);
+			var prod = (x-pa.x)*(y-pb.y)+(x-pb.x)*(y-pa.y);
+			if(prod>0) {
+				// point within the segment
+				point.x = x;
+				point.y = y;
+			} 
+			else {
+				if(da<db) {
+					// force point to be pa
+					point.x = pa.x;
+					point.y = pa.y;
+				}
+				else {
+					// force point to be pb
+					point.x = pb.x;
+					point.y = pb.y;
+				}
+			}
+
+			// save ratio
+			var ab = (pa.x-pb.x)*(pa.x-pb.x)+(pa.y-pb.y)*(pa.y-pb.y);
+			point.data = Math.sqrt(da/ab);
+		}
+
+
+		return true;
+	}
+
+	self.drawIcon = function(ctx,w,h) {
+		var x1 = w/2-9;
+		var y1 = h/2+9;
+		var x2 = w/2+9;
+		var y2 = h/2-9;
+
+		ctx.fillStyle = "white";
+		ctx.fillCircle(x1,y1,3);
+		ctx.fillCircle(x2,y2,3);
+			
+		ctx.strokeStyle = "white";
+		ctx.lineWidth =2;
+		ctx.beginPath();
+		ctx.moveTo(x1,y1);
+		ctx.lineTo(x2,y2);
+		ctx.stroke();
+
+		ctx.fillStyle = "red";
+		ctx.fillCircle(w/2+3,h/2-3,3);
+	}
+
+	self.getHelp = function() {
+		return "Constraint a point on a segment";
+	}
+}
+
+PointOnSegmentBuilder.prototype = Object.create(Builder.prototype);
+PointOnSegmentBuilder.prototype.constructor = PointOnSegmentBuilder;
+
+//****************************************************************************
+
 function  PointOnLineBuilder() {
 
 	var self = this;
@@ -1124,17 +1229,35 @@ function  PointOnLineBuilder() {
 
 	self.update = function(target) {
 		var point = target;
-		var line = self.parents[0];
 
-		if(!line.valid) return point.valid = false;
+		if(self.parents[0] instanceof GLine) {
+			var line = self.parents[0];
 
-		var d = line.a*line.a+line.b*line.b;
-		var y = line.a*(line.a*point.y-line.b*point.x)-line.b*line.c;
-		y = y/d;
-		var x = line.b*(line.b*point.x-line.a*point.y)-line.a*line.c;
-		x = x/d;
-		point.x = x;		
-		point.y = y;
+			if(!line.valid) return point.valid = false;
+
+			var d = line.a*line.a+line.b*line.b;
+			var y = line.a*(line.a*point.y-line.b*point.x)-line.b*line.c;
+			y = y/d;
+			var x = line.b*(line.b*point.x-line.a*point.y)-line.a*line.c;
+			x = x/d;
+			point.x = x;		
+			point.y = y;
+			}
+
+		if(self.parents[0] instanceof GSegment) {
+			var segment = self.parents[0];
+			var pa = segment.builder.parents[0];
+			var pb = segment.builder.parents[1];
+
+			var a = (pb.x-pa.x);
+			var b = (pb.y-pa.y);
+			var c = -point.x*a-point.y*b;
+			var d = -pa.x*b+pa.y*a;
+			
+			point.x = (-d*b-c*a)/(a*a+b*b);
+			point.y = (d*a-c*b)/(a*a+b*b);
+		}
+
 		return true;
 	}
 
