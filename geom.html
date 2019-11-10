@@ -10,6 +10,12 @@ body	{
 }
 * {
 	box-sizing:border-box;
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Old versions of Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none; /* Non-prefixed version */
 }
 canvas {
 	position:fixed;
@@ -688,10 +694,6 @@ function onlist(event) {
 	if(!target.dataset.index) return;
 
 	var oindex = parseInt(target.dataset.index);
-
-	for(var i=0;i<objects.length;i++) 
-		if(i!=oindex)		
-			objects[i].selected = false;
 
 	objects[oindex].selected = !objects[oindex].selected;
 
