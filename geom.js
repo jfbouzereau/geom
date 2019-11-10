@@ -324,7 +324,7 @@ function GRatio() {
 	self.draw = function() {}
 
 	self.getMessage = function() {
-		var ratio = ((self.value*10000)|0)/10000;
+		var ratio = (Math.round(self.value*10000)|0)/10000;
 		return "Ratio = "+ratio;
 	}
 	
@@ -332,6 +332,41 @@ function GRatio() {
 
 GRatio.prototype = Object.create(GMeasurer.prototype);
 GRatio.prototype.constructor = GRatio;
+
+//****************************************************************************
+
+function GArea() {
+
+	var self = this;
+
+	GMeasurer.call(self);
+
+	self.value = 0;
+
+	self.name = "R"+self.getId();
+
+	self.draw = function(ctx,width,height) {
+		ctx.globalAlpha = self.selected ? 1 : 0.1;
+
+		ctx.fillStyle = self.color;
+		ctx.beginPath();
+		ctx.moveTo(self.builder.parents[1].x,self.builder.parents[1].y);
+		for(var i=2;i<self.builder.parents.length;i++)  
+			ctx.lineTo(self.builder.parents[i].x,self.builder.parents[i].y);
+		ctx.closePath();
+		ctx.fill();
+	}
+
+
+	self.getMessage = function() {
+		var area = (Math.round(self.value*10000)|0)/10000;	
+		return "Area = "+area;
+	}
+	
+}
+
+GArea.prototype = Object.create(GMeasurer.prototype);
+GArea.prototype.constructor = GArea;
 
 //****************************************************************************
 //****************************************************************************
@@ -1857,4 +1892,102 @@ RatioBuilder.prototype = Object.create(Builder.prototype);
 RatioBuilder.prototype.constructor = RatioBuilder;
 
 //****************************************************************************
+
+function AreaBuilder() {
+
+	var self = this;
+
+	Builder.call(self);
+
+	var step = 0;
+	var types = [GSegment,GPoint];
+	var prompts = ["Select the unit segment","Select a point or close the shape"];
+
+	// overwrite default methods
+	self.getPrompt = function() {
+		if(step==0)
+			return prompts[0];
+		else if(step<=2)
+			return "Select point "+step+" or close the shape";
+		else if(self.parents[self.parents.length-1]==self.parents[1])
+			// last selected point closes the shape
+			return null;
+		else
+			return "Select point "+step+" or close the shape";
+	}
+
+	self.getParentType = function() {
+		if(step==0)
+			return types[0];
+		else
+			return types[1];
+	}
+	
+	self.setParent = function(obj) {
+		self.parents.push(obj);
+		step++;
+		return true;
+	}
+
+	self.build = function() {
+		var target = new GArea();
+		target.builder = self;
+		self.update(target);
+		return target;
+	}
+
+	self.update = function(target) {
+		var area = target;
+		var segment = self.parents[0];
+		var pa = segment.builder.parents[0];
+		var pb = segment.builder.parents[1];
+		var norm = (pa.x-pb.x)*(pa.x-pb.x)+(pa.y-pb.y)*(pa.y-pb.y);
+
+		var sum = 0;
+		for(var i=1;i<self.parents.length;i++) {
+			var j = (i==self.parents.length-1) ? 1 : i+1;
+			sum += self.parents[i].x*self.parents[j].y
+				-self.parents[i].y*self.parents[j].x;
+		}
+		area.value = sum/norm/2;
+		return true;
+	}
+
+	self.drawIcon = function(ctx,w,h) {
+		var x1 = w/2-14;
+		var y1 = h/2-14;
+		var x2 = w/2+6;
+		var y2 = h/2-10;
+		var x3 = w/2+10;
+		var y3 = h/2+1;
+		var x4 = w/2+4;
+		var y4 = h/2+10;
+		var x5 = w/2-12;
+		var y5 = h/2+1;
+
+		ctx.fillStyle = BLUE;	
+		ctx.beginPath();
+		ctx.moveTo(x1,y1);
+		ctx.lineTo(x2,y2);
+		ctx.lineTo(x3,y3);
+		ctx.lineTo(x4,y4);
+		ctx.lineTo(x5,y5);
+		ctx.closePath();
+		ctx.fill();
+		
+		ctx.fillStyle = "white";
+		ctx.fillCircle(x1,y1,2);
+		ctx.fillCircle(x2,y2,2);
+		ctx.fillCircle(x3,y3,2);
+		ctx.fillCircle(x4,y4,2);
+		ctx.fillCircle(x5,y5,2);
+	}
+
+	self.getHelp = function() {
+		return "Measure the area of a shape";
+	}
+}
+
+AreaBuilder.prototype = Object.create(Builder.prototype);
+AreaBuilder.prototype.constructor = AreaBuilder;
 

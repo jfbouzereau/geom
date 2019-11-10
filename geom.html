@@ -164,6 +164,7 @@ canvas {
 		<div class="button" data-builder="PointOnCircle"></div>
 		<div class="button" data-builder="Angle"></div>
 		<div class="button" data-builder="Ratio"></div>
+		<div class="button" data-builder="Area"></div>
 		<div class="bcommand" data-help="Download the config as json file" data-command="download">⬇︎</div>
 	</div>
 	<div id="list">
@@ -659,7 +660,12 @@ function updateList() {
 	function parentList(obj) {
 		var s = [];
 		for(var i=0;i<obj.builder.parents.length;i++)
-			s.push(obj.builder.parents[i].name);
+			if(i<5)
+				s.push(obj.builder.parents[i].name);		
+			else {
+				s.push("…");
+				break;
+			}
 		return s.join(",");
 	}
 }
