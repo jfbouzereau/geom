@@ -319,7 +319,7 @@ function oncontrol(event) {
 			if(builder instanceof PointBuilder)
 				state = {action:A_CREATE,builder:builder};
 			else
-				state = {action:A_BUILD,builder:builder};
+				state = {action:A_BUILD,builder:builder,index:-1};
 			draw();
 			}
 		catch(err) {
@@ -368,6 +368,8 @@ function onquithelp() {
 
 var xclick,yclick,xmove,ymove;
 
+//***************************************************************************
+
 function ondown(event) {
 
 	xclick = xmove = event.clientX;
@@ -377,13 +379,10 @@ function ondown(event) {
 		state.point = new Point(xclick,yclick);	
 	}
 	else if(state && state.action==A_BUILD) {
-		state.index= getPickedObject(state.builder.getParentType());
+		state.index= getPickedObject(state.builder.getParentType(),false,xclick,yclick);
 	}		
-	else if(state && state.action==A_COLOR) {
-		state.index = getPickedObject();
-	}
 	else if(!state) {
-		var index = getPickedObject(GPoint,true);
+		var index = getPickedObject(GPoint,true,xclick,yclick);
 		if(index>=0) {
 			delete objects[index].data;	// allow object to be dragged
 			state = {action:A_DRAG,index:index}
@@ -394,6 +393,8 @@ function ondown(event) {
 
 	draw();
 }
+
+//***************************************************************************
 
 function onmove(event) {
 	if(!state) return;
@@ -407,6 +408,13 @@ function onmove(event) {
 		point.x = xmove;
 		point.y = ymove;
 	}
+	else if(state.action==A_BUILD) {
+		if(state.index<0) {
+			// no object picked so far
+			var index = getPickedObject(state.builder.getParentType(),false,xmove,ymove);
+			hilite(index);
+		}
+	}
 	else if(state.action==A_SCROLL) {
 		for(var i=0;i<objects.length;i++)
 			if(mustScroll(objects[i])) {
@@ -419,6 +427,8 @@ function onmove(event) {
 
 	draw();
 }
+
+//***************************************************************************
 
 function onup(event) {
 	if(!state) return;
@@ -440,10 +450,14 @@ function onup(event) {
 
 	if(state.action==A_BUILD) {
 		if(state.index>=0) {
+			hilite(-1);
 			state.builder.setParent(objects[state.index]);
 			var msg = state.builder.getPrompt();
-			if(msg)
+			if(msg) {
+				// another object is to be selected
 				showStatus(msg);
+				state.index = -1;
+			}
 			else {
 				// building is complete
 				showStatus("");
@@ -474,6 +488,14 @@ function onup(event) {
 
 //***************************************************************************
 
+function hilite(index) {
+
+	for(var i=0;i<objects.length;i++)
+		objects[i].hilited = i==index;
+}
+
+//***************************************************************************
+
 function mustScroll(object) {
 	if(object.builder instanceof PointBuilder) return true;
 	if(object.constrained) return true;
@@ -482,16 +504,15 @@ function mustScroll(object) {
 
 //***************************************************************************
 
-function getPickedObject(type,tobemoved) {
+function getPickedObject(type,tobemoved,x,y) {
 
 	for(var i=objects.length-1;i>=0;i--) {
 		if(type && !(objects[i] instanceof type)) continue;
 		if(!objects[i].valid) continue;
-		if(objects[i].hidden) continue;
 		if(tobemoved&&!mustScroll(objects[i])) continue;
-		if(objects[i].isPicked(xclick,yclick))	 {
-			objects[i].xpick = xclick;
-			objects[i].ypick = yclick;
+		if(objects[i].isPicked(x,y))	 {
+			objects[i].xpick = x;
+			objects[i].ypick = y;
 			return i;
 		}
 	}

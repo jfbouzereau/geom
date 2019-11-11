@@ -39,7 +39,7 @@ function GObject() {
 	self.name = "";
 	self.color = "white";
 	self.valid = true;
-	self.hidden = false;
+	self.hilited = false;
 	self.selected = false;
 	self.constrained = false;
 
@@ -86,7 +86,7 @@ function GPoint(){
 	self.draw = function(ctx,width,height) {
 		ctx.strokeStyle = self.color;
 		ctx.fillStyle = self.color;	
-		if(self.selected) {
+		if(self.selected || self.hilited) {
 			ctx.lineWidth = 3;
 			if(self.builder instanceof PointBuilder)
 				ctx.strokeCircle(self.x,self.y,6);
@@ -107,10 +107,10 @@ function GPoint(){
 
 	self.isPicked = function(x,y) {
 		self.xpick = self.ypick = null;
-		if(x<self.x-3) return false;
-		if(x>self.x+3) return false;
-		if(y<self.y-3) return false;
-		if(y>self.y+3) return false;
+		if(x<self.x-4) return false;
+		if(x>self.x+4) return false;
+		if(y<self.y-4) return false;
+		if(y>self.y+4) return false;
 		return true;
 	}
 
@@ -148,7 +148,7 @@ function GLine() {
 			var y2 = height;
 			var x2 = -(self.b*y2+self.c)/self.a;
 		}
-		ctx.lineWidth = self.selected ? 4 :1 ;
+		ctx.lineWidth = (self.selected||self.hilited) ? 4 :1 ;
 		ctx.beginPath();
 		ctx.moveTo(x1,y1);
 		ctx.lineTo(x2,y2);
@@ -184,7 +184,7 @@ function GSegment() {
 	self.draw = function(ctx,width,height) {
 
 		ctx.strokeStyle = self.color;
-		ctx.lineWidth = self.selected ? 4 : 1;
+		ctx.lineWidth = (self.selected||self.hilited) ? 4 : 1;
 		ctx.beginPath();
 		ctx.moveTo(self.x1,self.y1);
 		ctx.lineTo(self.x2,self.y2);
@@ -232,7 +232,7 @@ function GCircle() {
 
 	self.draw = function(ctx,width,height) {
 		ctx.strokeStyle = self.color;
-		ctx.lineWidth = self.selected ? 4 : 1;
+		ctx.lineWidth = (self.selected||self.hilited) ? 4 : 1;
 		ctx.strokeCircle(self.x,self.y,self.r);
 	}
 
