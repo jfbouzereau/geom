@@ -33,3 +33,7 @@ With this playground you can verify some fundamental geometric theorems :
 * Demo 17 : Pappus's theorem.
 
 ![demo17](demo17.png)
+
+* Demo 18 : Locus of points equidistant from point and circle
+
+![demo18](demo18.png)
