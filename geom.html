@@ -165,6 +165,7 @@ canvas {
 		<div class="button" data-builder="Angle"></div>
 		<div class="button" data-builder="Ratio"></div>
 		<div class="button" data-builder="Area"></div>
+		<div class="button" data-builder="Trace"></div>
 		<div class="bcommand" data-help="Download the config as json file" data-command="download">⬇︎</div>
 	</div>
 	<div id="list">
@@ -417,10 +418,7 @@ function onmove(event) {
 	}
 	else if(state.action==A_SCROLL) {
 		for(var i=0;i<objects.length;i++)
-			if(mustScroll(objects[i])) {
-				objects[i].x += xmove-xclick;
-				objects[i].y += ymove-yclick;
-		}
+			objects[i].shift(xmove-xclick,ymove-yclick);
 		xclick = xmove;
 		yclick = ymove;
 	}
@@ -498,6 +496,7 @@ function hilite(index) {
 
 function mustScroll(object) {
 	if(object.builder instanceof PointBuilder) return true;
+	if(object instanceof GTrace) return true;
 	if(object.constrained) return true;
 	return false;
 }

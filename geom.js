@@ -51,6 +51,7 @@ function GObject() {
 
 	self.builder = null;
 
+	self.shift = function() {}
 }
 
 GObject.gid = 0;
@@ -114,6 +115,12 @@ function GPoint(){
 		return true;
 	}
 
+	self.shift = function(dx,dy) {
+		if((self.builder instanceof PointBuilder)||self.constrained) {
+			self.x += dx;
+			self.y += dy;
+		}
+	}
 }
 
 GPoint.prototype = Object.create(GObject.prototype);
@@ -367,6 +374,45 @@ function GArea() {
 
 GArea.prototype = Object.create(GMeasurer.prototype);
 GArea.prototype.constructor = GArea;
+
+//****************************************************************************
+
+function GTrace() {
+
+	var self = this;
+
+	GObject.call(self);
+
+	var list = [];
+
+	self.name = "T"+self.getId();
+
+	self.draw = function(ctx,width,height) {	
+		ctx.strokeStyle = self.color;
+		ctx.lineWidth = self.selected ? 4 :1;
+		ctx.beginPath();
+		for(var i=0;i<list.length;i++)
+			if(i==0) ctx.moveTo(list[i].x,list[i].y);
+		else
+			ctx.lineTo(list[i].x,list[i].y);
+		ctx.stroke();
+	}
+
+	self.add = function(x,y) {
+		list.push({x,y});
+	}
+
+	self.shift = function(dx,dy) {
+		for(var i=0;i<list.length;i++) {
+			list[i].x += dx;
+			list[i].y += dy;
+		}	
+	}
+
+}
+
+GTrace.prototype = Object.create(GObject.prototype);
+GTrace.prototype.constructor = GTrace;
 
 //****************************************************************************
 //****************************************************************************
@@ -1990,4 +2036,53 @@ function AreaBuilder() {
 
 AreaBuilder.prototype = Object.create(Builder.prototype);
 AreaBuilder.prototype.constructor = AreaBuilder;
+
+//****************************************************************************
+
+function TraceBuilder() {
+
+	var self = this;
+
+	Builder.call(self,
+		[GPoint],
+		["Select the point to trace"]
+	);
+
+	self.build = function() {
+		var target = new GTrace();
+		target.builder = self;
+		self.update(target);
+		return target;
+	}
+
+	self.update = function(target) {		
+		var trace = target;
+		var point = self.parents[0];
+		trace.add(point.x,point.y);
+		return true;
+	}
+
+	self.drawIcon = function(ctx,w,h) {
+		ctx.lineWidth = 2;
+		ctx.strokeStyle = BLUE;
+		ctx.beginPath();
+		ctx.moveTo(w/2-15,h/2-15);
+		ctx.lineTo(w/2+3,h/2-12);
+		ctx.lineTo(w/2+10,h/2-7);
+		ctx.lineTo(w/2+4,h/2-2);
+		ctx.lineTo(w/2-5,h/2+3);
+		ctx.lineTo(w/2+7,h/2+6);
+		ctx.lineTo(w/2+12,h/2+12);
+		ctx.stroke();
+		ctx.fillStyle = "white";
+		ctx.fillCircle(w/2+12,h/2+12,3);
+	}
+
+	self.getHelp = function() {
+		return "Trace a point";
+	}
+}
+
+TraceBuilder.prototype = Object.create(Builder.prototype);
+TraceBuilder.prototype.constructor = TraceBuilder;
 
