@@ -164,7 +164,7 @@ canvas {
 		<div class="button" data-builder="PointOnLine"></div>
 		<div class="button" data-builder="PointOnCircle"></div>
 		<div class="button" data-builder="Angle"></div>
-		<div class="button" data-builder="Ratio"></div>
+		<div class="button" data-builder="Path"></div>
 		<div class="button" data-builder="Area"></div>
 		<div class="button" data-builder="Trace"></div>
 		<div class="bcommand" data-help="Download the config as json file" data-command="download">⬇︎</div>
@@ -526,7 +526,7 @@ function showStatus(msg) {
 
 	var el = document.querySelector("#status span");
 	if(el.innerText!=msg)		
-		el.innerText = "  "+msg+"  ";
+		el.innerText = "               "+msg+"               ";
 }
 
 //***************************************************************************

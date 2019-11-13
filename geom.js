@@ -362,7 +362,7 @@ GAngle.prototype.constructor = GAngle;
 
 //****************************************************************************
 
-function GRatio() {
+function GPath() {
 
 	var self = this;
 
@@ -370,19 +370,19 @@ function GRatio() {
 
 	self.value = 0;
 
-	self.name = "R"+self.getId();
+	self.name = "M"+self.getId();
 
 	self.draw = function() {}
 
 	self.getMessage = function() {
 		var ratio = (Math.round(self.value*10000)|0)/10000;
-		return "Ratio = "+ratio;
+		return "Length = "+ratio;
 	}
 	
 }
 
-GRatio.prototype = Object.create(GMeasurer.prototype);
-GRatio.prototype.constructor = GRatio;
+GPath.prototype = Object.create(GMeasurer.prototype);
+GPath.prototype.constructor = GPath;
 
 //****************************************************************************
 
@@ -2013,34 +2013,65 @@ SquareBuilder.prototype.constructor = SquareBuilder;
 
 //****************************************************************************
 
-function RatioBuilder() {
+function PathBuilder() {
 
 	var self = this;
 
-	Builder.call(self,
-		[GSegment,GSegment],
-		["Select the unit segment","Select the measured segment"]
-	);
+	Builder.call(self);
 
+	var step = 0;
+	var types = [GSegment,GPoint];
+	var prompts = ["Select the unit segment","Select a point or close the shape"];
 	self.build = function() {
-		var target = new GRatio();
+		var target = new GPath();
 		target.builder = self;
 		self.update(target);
 		return target;
 	}
 
+	// overwrite default methods
+	self.getPrompt = function() {
+		var l = self.parents.length;
+		if(step==0)
+			return prompts[0];
+		else if(step<=2)
+			return "Select point "+step;
+		else if(self.parents[l-1]==self.parents[l-2])
+			// last selected point finish the path
+			return null;
+		else
+			return "Select point "+step+" or repeat the point to finish";
+	}
+
+	self.getParentType = function() {
+		if(step==0)
+			return types[0];
+		else
+			return types[1];
+	}
+	
+	self.setParent = function(obj) {
+		self.parents.push(obj);
+		step++;
+		return true;
+	}
 	self.update = function(target) {
-		var ratio = target;
-		var segment1 = self.parents[0];
-		var segment2 = self.parents[1];
+		var path = target;
+		var segment = self.parents[0];
+		var pa = segment.builder.parents[0];
+		var pb = segment.builder.parents[1];
+		var norm = Math.sqrt((pa.x-pb.x)*(pa.x-pb.x)+(pa.y-pb.y)*(pa.y-pb.y));
 
-		var pa1 = segment1.builder.parents[0];
-		var pb1 = segment1.builder.parents[1];
+		var length = 0;
+		var n = self.parents.length;
+		for(var i=1;i<n-1;i++) {
+			pa = self.parents[i];
+			pb = self.parents[i+1];
+			var d = Math.sqrt((pa.x-pb.x)*(pa.x-pb.x)+(pa.y-pb.y)*(pa.y-pb.y));
+			length += d;
+		}
 
-		var pa2 = segment2.builder.parents[0];
-		var pb2 = segment2.builder.parents[1];
-
-		ratio.value = norm(pa2,pb2)/norm(pa1,pb1);
+		path.value = length/norm;
 		return true;
 	}
 
@@ -2049,27 +2080,42 @@ function RatioBuilder() {
 	}
 
 	self.drawIcon = function(ctx,w,h) {
-		var x1 = w/2-9;
-		var y1 = h/2+9;
-		var x2 = w/2+9;
-		var y2 = h/2-9;
+		var x1 = w/2-14;
+		var y1 = h/2-14;
+		var x2 = w/2+6;
+		var y2 = h/2-10;
+		var x3 = w/2+10;
+		var y3 = h/2+1;
+		var x4 = w/2+4;
+		var y4 = h/2+10;
+		var x5 = w/2-12;
+		var y5 = h/2+1;
 
+		ctx.strokeStyle = BLUE;	
+		ctx.lineWidth = 2;
+		ctx.beginPath();
+		ctx.moveTo(x1,y1);
+		ctx.lineTo(x2,y2);
+		ctx.lineTo(x3,y3);
+		ctx.lineTo(x4,y4);
+		ctx.lineTo(x5,y5);
+		ctx.stroke();
+		
 		ctx.fillStyle = "white";
-		ctx.fillCircle(x1,y1,3);
-		ctx.fillCircle(x2,y2,3);
-			
-		ctx.strokeStyle = BLUE;
-		ctx.lineWidth =2;
-		ctx.strokeLine(x1,y1,x2,y2);
+		ctx.fillCircle(x1,y1,2);
+		ctx.fillCircle(x2,y2,2);
+		ctx.fillCircle(x3,y3,2);
+		ctx.fillCircle(x4,y4,2);
+		ctx.fillCircle(x5,y5,2);
 	}
 
 	self.getHelp = function() {
-		return "Measure a segment"
+		return "Measure a path";
 	}
 }
 
-RatioBuilder.prototype = Object.create(Builder.prototype);
-RatioBuilder.prototype.constructor = RatioBuilder;
+PathBuilder.prototype = Object.create(Builder.prototype);
+PathBuilder.prototype.constructor = PathBuilder;
 
 //****************************************************************************
 
@@ -2164,7 +2210,7 @@ function AreaBuilder() {
 	}
 
 	self.getHelp = function() {
-		return "Measure the area of a shape";
+		return "Measure an area";
 	}
 }
 
