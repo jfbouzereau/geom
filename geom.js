@@ -256,6 +256,50 @@ GCircle.prototype.constructor = GCircle;
 
 //****************************************************************************
 
+function GEllipse() {
+	
+	var self = this;
+
+	GObject.call(self);
+
+	self.name = "E"+self.getId();
+
+	self.po = {x:0,y:0};			// center
+	self.cx = 0;
+	self.cy = 0;
+	self.sx = 0;
+	self.sy = 0;
+
+	self.draw = function(ctx,width,height) {
+		ctx.strokeStyle = self.color;		
+		ctx.lineWidth = self.selected ? 4 : 1;
+	
+		ctx.beginPath();
+		for(var i=0;i<=100;i++) {
+			var angle = i*Math.PI*2/100;
+			var cos = Math.cos(angle);
+			var sin = Math.sin(angle);
+			var x = self.po.x + self.cx*cos + self.sx*sin;
+			var y = self.po.y + self.cy*cos + self.sy*sin;
+			if(i==0)
+				ctx.moveTo(x,y);
+			else
+				ctx.lineTo(x,y);
+		}
+		ctx.stroke();
+	}
+
+	self.isPicked = function(x,y) {
+		return false;
+	}
+
+}
+
+GEllipse.prototype = Object.create(GObject.prototype);
+GEllipse.prototype.constructor = GEllipse;
+
+//****************************************************************************
+
 function GAngle() {
 
 	var self = this;
@@ -399,7 +443,11 @@ function GTrace() {
 	}
 
 	self.add = function(x,y) {
-		list.push({x,y});
+		var l = list.length;
+		if(l==0)
+			list.push({x,y});
+		else if((list[l-1].x!=x)||(list[l-1].y!=y))
+			list.push({x,y});
 	}
 
 	self.shift = function(dx,dy) {
@@ -689,6 +737,92 @@ function ThreePointCircleBuilder() {
 
 ThreePointCircleBuilder.prototype = Object.create(Builder.prototype);
 ThreePointCircleBuilder.prototype.constructor = ThreePointCircleBuilder;
+
+//****************************************************************************
+
+function EllipseBuilder() {
+
+	var self = this;
+
+	Builder.call(self,
+		[GPoint,GPoint,GPoint],
+		["Select the 1st focus","Select the 2nd focus",
+			"Select a point on the ellipse"]
+	);
+
+	self.build = function() {
+		var target = new GEllipse();
+		target.builder = self;
+		self.update(target);
+		return target;
+	}
+
+	self.update = function(target) {
+		var ellipse = target;
+		var pa = self.parents[0];	// first focus
+		var pb = self.parents[1];	// second focus
+		var pc = self.parents[2];	// point on ellipse
+
+		// distance from pc to pa and pb
+		var a = Math.sqrt((pa.x-pc.x)*(pa.x-pc.x)+(pa.y-pc.y)*(pa.y-pc.y));
+		var b = Math.sqrt((pb.x-pc.x)*(pb.x-pc.x)+(pb.y-pc.y)*(pb.y-pc.y));
+		
+		// distance between the two foci
+		var d = Math.sqrt((pa.x-pb.x)*(pa.x-pb.x)+(pa.y-pb.y)*(pa.y-pb.y));
+
+		// center		
+		var po = {x:(pa.x+pb.x)/2,y:(pa.y+pb.y)/2};
+
+		// vectors on the two axes
+		var u = {x:pb.x-po.x,y:pb.y-po.y};
+		var v = {x:po.y-pb.y,y:pb.x-po.x};
+
+		// norm	
+		var norm = Math.sqrt(u.x*u.x+u.y*u.y);
+
+		// point of ellipse is   P = C*cos(theta)*u + S*sin(theta)*v;
+	
+		var C = (a+b)/2;
+		var S = Math.sqrt((a+b)*(a+b)-d*d)/2;
+
+		ellipse.cx = C*u.x/norm;
+		ellipse.sx = S*v.x/norm;
+		ellipse.cy = C*u.y/norm;
+		ellipse.sy = S*v.y/norm;
+		ellipse.po = po;	
+
+		return true;
+	}
+
+	self.drawIcon = function(ctx,w,h) {	
+		ctx.fillStyle = "white";
+		ctx.fillCircle(w/2-8,h/2,3);
+		ctx.fillCircle(w/2+8,h/2,3);
+		ctx.fillCircle(w/2+4,h/2-8,3);
+
+		ctx.strokeStyle = GREEN;
+		ctx.beginPath();
+		for(var i=0;i<=10;i++) {
+			var angle = i*Math.PI*2/10;
+			var cos = Math.cos(angle);
+			var sin = Math.sin(angle);
+			if(i==0)
+				ctx.moveTo(w/2+16*cos,h/2+9*sin);
+			else
+				ctx.lineTo(w/2+16*cos,h/2+9*sin);
+			ctx.stroke();
+		}		
+	}
+
+	self.getHelp = function() {
+		return "Build an ellipse from its two foci";
+	}
+
+		
+}
+
+EllipseBuilder.prototype = Object.create(Builder.prototype);
+EllipseBuilder.prototype.constructor = EllipseBuilder;
 
 //****************************************************************************
 
