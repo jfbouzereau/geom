@@ -372,7 +372,21 @@ function GPath() {
 
 	self.name = "M"+self.getId();
 
-	self.draw = function() {}
+	self.draw = function() {
+		if(!self.selected) return;
+		ctx.strokeStyle = self.color;
+		ctx.setLineDash([4,4]);
+	
+		var p = self.builder.parents;
+		ctx.beginPath();
+		for(var i=1;i<p.length;i++) {		
+			if(i==0)
+				ctx.moveTo(p[i].x,p[i].y);
+			else
+				ctx.lineTo(p[i].x,p[i].y);
+		}
+		ctx.stroke();
+	}
 
 	self.getMessage = function() {
 		var ratio = (Math.round(self.value*10000)|0)/10000;
