@@ -37,3 +37,11 @@ With this playground you can verify some fundamental geometric theorems :
 * Demo 18 : Locus of points equidistant from point and circle
 
 ![demo18](demo18.png)
+
+# USAGE
+
+* Clone or download the directory .
+
+* Build your own problem, or drop one of the json files to the workspace.
+
+
