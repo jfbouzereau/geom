@@ -44,4 +44,16 @@ With this playground you can verify some fundamental geometric theorems :
 
 * Build your own problem, or drop one of the json files to the workspace.
 
+* A construction always starts with some points. From these you can build other objects : segments, lines, circles, etc. 
+
+* A free point is represented by a circle. It can be moved with the mouse.
+
+* A constructed point is represented by a disk. It cannot be moved by itself.
+
+* A constrained point is represented by a square. It can be moved along its path.
+
+* To select an element, click on its name in the list. It will be displayed hilited.
+
+* To change the color of an element, click on its colored square and choose another color in the palette.
+
 
