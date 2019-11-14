@@ -48,6 +48,8 @@ With this playground you can verify some fundamental geometric theorems :
 
 * A construction always starts with some points. From these you can build other objects : segments, lines, circles, etc. 
 
+* To add an element to the problem, click on the corresponding icon in the toolbox, then follow the instructions in the bottom status line.
+
 * A free point is represented by a circle. It can be moved with the mouse.
 
 * A constructed point is represented by a disk. It cannot be moved by itself.
