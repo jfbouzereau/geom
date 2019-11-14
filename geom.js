@@ -1632,6 +1632,99 @@ CircleIntersectionBuilder.prototype.constructor = CircleIntersectionBuilder;
 
 //****************************************************************************
 
+function TangentBuilder() {
+
+	var self = this;
+
+	Builder.call(self,
+		[GCircle,GPoint],
+		["Select the circle","Select the point"]
+	);
+
+	self.build = function() {
+		var targets = [new GLine(),new GLine()];
+
+		targets[0].builder = self;
+		targets[0].data = 1;
+
+		targets[1].builder = self;
+		targets[1].data = -1;
+
+		self.update(targets[0]);
+		self.update(targets[1]);
+		return targets;
+	}
+
+	self.update = function(target) {	
+		var line = target;
+		var circle = self.parents[0];
+		var point = self.parents[1];
+	
+		if(!circle.valid) return point.valid = false;	
+
+		// mid distance point, center of virtual circle
+		var po = {x:(circle.x+point.x)/2,y:(circle.y+point.y)/2};
+	
+		// distance between the centers of the circles = radius of virtual circle
+		var radius = (point.x-po.x)*(point.x-po.x)+(point.y-po.y)*(point.y-po.y);
+		radius = Math.sqrt(radius);		
+		if(radius<circle.r/2) return point.valid = false;	
+
+		var a = circle.r*circle.r/(2.0*radius);
+		var h = Math.sqrt(circle.r*circle.r-a*a);
+
+		// tangent point
+		var tp = {};
+		tp.x = circle.x + a*(po.x-circle.x)/radius + line.data*h*(po.y-circle.y)/radius;
+		tp.y = circle.y + a*(po.y-circle.y)/radius - line.data*h*(po.x-circle.x)/radius;
+
+		// line through initial point and tangent point
+		var dx = point.x - tp.x;
+		var dy = point.y - tp.y;
+
+        if(Math.abs(dx)<1.e-5) {
+            line.a = 0;
+            line.b = 1;
+            line.c = -point.x;
+        }
+        else if(Math.abs(dy)<1.e-5) {
+            line.a = 0;
+            line.b = 1;
+            line.c = -point.y;
+        }
+        else if(Math.abs(dx)<Math.abs(dy)) {
+            line.a = 1;
+            line.b = -dx/dy;
+            line.c = -line.a*point.x -line.b*point.y;
+        }
+        else {
+            line.a = -dy/dx;
+            line.b = 1;
+            line.c = -line.a*point.x-line.b*point.y;
+        }
+		return true;
+	}
+
+	self.drawIcon = function(ctx,w,h) {
+		ctx.strokeStyle = "white";
+		ctx.strokeCircle(w/2-8,h/2-1,10);
+		ctx.fillStyle = "white";
+		ctx.fillCircle(w/2+13,h/2-0,3);
+		ctx.strokeStyle = GREEN;
+		ctx.strokeLine(w/2-15,h/2-18,w/2+15,h/2);
+		ctx.strokeLine(w/w-12,h/2+19,w/2+15,h/2);
+	}
+
+	self.getHelp = function() {		
+		return "Build tangent lines to a circle"
+	}	
+}
+
+TangentBuilder.prototype = Object.create(Builder.prototype);
+TangentBuilder.prototype.constructor = TangentBuilder;
+
+//****************************************************************************
+
 function TranslationBuilder() {
 
 	var self = this;
