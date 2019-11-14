@@ -547,7 +547,7 @@ function downloadConfig() {
 				entry.parents.push(obj.builder.parents[j].name);
 		for(var field in obj)
 			if(typeof(obj[field])=="number")
-				entry[field] = obj[field];
+				entry[field] = round(obj[field]);
 			else if(typeof(obj[field])=="string")
 				entry[field] = obj[field];
 			else if(typeof(obj[field])=="boolean")
@@ -556,6 +556,7 @@ function downloadConfig() {
 	}
 
 	var text = JSON.stringify(config);
+	text = text.replace(/},{/g,"},\n{");
 
 	var URL = window.URL || window.webkitURL;
 	var blob = new Blob([text],{type:"application/json"});
@@ -573,6 +574,9 @@ function downloadConfig() {
         
 	URL.revokeObjectURL(url);
 
+	function round(x) {
+		return Math.round(x*10000)/10000;
+	}
 }
 
 //***************************************************************************
