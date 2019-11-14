@@ -42,6 +42,8 @@ With this playground you can verify some fundamental geometric theorems :
 
 * Clone or download the directory .
 
+* Open `geom.html` in your browser.
+
 * Build your own problem, or drop one of the json files to the workspace.
 
 * A construction always starts with some points. From these you can build other objects : segments, lines, circles, etc. 
@@ -53,6 +55,8 @@ With this playground you can verify some fundamental geometric theorems :
 * A constrained point is represented by a square. It can be moved along its path.
 
 * To select an element, click on its name in the list. It will be displayed hilited.
+
+* To unselect an element, click again on its name.
 
 * To change the color of an element, click on its colored square and choose another color in the palette.
 
