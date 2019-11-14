@@ -314,7 +314,7 @@ function GAngle() {
 		var pb = self.builder.parents[0];
 		var pa = self.builder.parents[1];
 		var pc = self.builder.parents[2];
-		var po = {x:pa.x+100,y:pa.y};		
+		var po = {x:pa.x+100,y:pa.y};	// point on x axis
 
 		var angle1 = computeAngle(po,pa,pb);
 		var angle2 = computeAngle(pb,pa,pc);
@@ -324,7 +324,18 @@ function GAngle() {
 		ctx.fillStyle = self.color;
 		ctx.beginPath();
 		ctx.moveTo(pa.x,pa.y);
-		if(angle2>0)
+		if((Math.abs(self.value-Math.PI/2)<0.001)||(Math.abs(self.value+Math.PI/2)<0.001)) {
+			var ac = Math.sqrt((pc.x-pa.x)*(pc.x-pa.x)+(pc.y-pa.y)*(pc.y-pa.y));
+			var ab = Math.sqrt((pb.x-pa.x)*(pb.x-pa.x)+(pb.y-pa.y)*(pb.y-pa.y));
+			var cx = radius/ac*(pc.x-pa.x);
+			var cy = radius/ac*(pc.y-pa.y);
+			var bx = radius/ab*(pb.x-pa.x);
+			var by = radius/ab*(pb.y-pa.y);
+			ctx.lineTo(pa.x+cx,pa.y+cy);
+			ctx.lineTo(pa.x+cx+bx,pa.y+cy+by);
+			ctx.lineTo(pa.x+bx,pa.y+by);
+		}
+		else if(angle2>0)
 			ctx.arc(pa.x,pa.y,radius,-angle1,-angle1-angle2,true);
 		else
 			ctx.arc(pa.x,pa.y,radius,-angle1-angle2,-angle1,true);
