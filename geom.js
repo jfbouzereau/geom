@@ -482,6 +482,9 @@ function GTrace() {
 		}	
 	}
 
+	self.clear = function() {
+		list = [];
+	}
 }
 
 GTrace.prototype = Object.create(GObject.prototype);

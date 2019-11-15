@@ -753,6 +753,8 @@ function onpalette(event) {
 
 	if(state && state.action==A_COLOR) {	
 		objects[state.oindex].color = COLORS[cindex];
+		if(objects[state.oindex] instanceof GTrace)
+			objects[state.oindex].clear();
 		state = null;
 		document.querySelector("#palette").style.display = "none";
 	}
