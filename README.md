@@ -38,6 +38,10 @@ With this playground you can verify some fundamental geometric theorems :
 
 ![demo18](demo18.png)
 
+* Demo 19 : Ornemental construction
+
+* Demo 20 : Area comparison
+
 # USAGE
 
 * Clone or download the directory .
