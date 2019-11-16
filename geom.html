@@ -77,7 +77,6 @@ canvas {
 	background-color:black;
 }
 #list div {
-	overflow:scroll;
 	width:100%;	
 	min-height:0;
 	max-height:100%;
@@ -164,10 +163,10 @@ canvas {
 		<div class="button" data-builder="PointOnSegment"></div>
 		<div class="button" data-builder="PointOnLine"></div>
 		<div class="button" data-builder="PointOnCircle"></div>
+		<div class="button" data-builder="Trace"></div>
 		<div class="button" data-builder="Angle"></div>
 		<div class="button" data-builder="Path"></div>
 		<div class="button" data-builder="Area"></div>
-		<div class="button" data-builder="Trace"></div>
 		<div class="bcommand" data-help="Download the config as json file" data-command="download">⬇︎</div>
 	</div>
 	<div id="list">
@@ -203,6 +202,7 @@ var canvas = document.querySelector("canvas");
 var ctx = canvas.getContext("2d");
 
 var objects = [];
+var listoffset = 0;
 
 setupIcons();
 setupPalette();
@@ -222,6 +222,9 @@ canvas.addEventListener("drop",ondrop);
 document.querySelector("#list table").addEventListener("click",onlist);
 
 document.querySelector("#palette").addEventListener("click",onpalette);
+
+document.body.addEventListener("keydown",onkey);
+document.body.focus();
 
 draw();
 
@@ -669,7 +672,7 @@ function updateList() {
 	var table = document.querySelector("#list table");
 
 	var html = "";
-	for(var i=0;i<objects.length;i++) {			
+	for(var i=listoffset;i<objects.length;i++) {			
 		var obj = objects[i];
 		cl = obj.selected ? "selected":"";
 		html += "<tr data-index='"+i+"' class='"+cl+"''>";
@@ -686,13 +689,30 @@ function updateList() {
 	function parentList(obj) {
 		var s = [];
 		for(var i=0;i<obj.builder.parents.length;i++)
-			if(i<5)
+			if(i<4)
 				s.push(obj.builder.parents[i].name);		
 			else {
 				s.push("…");
 				break;
 			}
 		return s.join(",");
+	}
+}
+
+//***************************************************************************
+
+function onkey(event) {
+	if(event.keyCode==38) {
+		if(listoffset>0) {
+			listoffset--;
+			updateList();
+		}
+	}
+	else if(event.keyCode==40) {
+		if(listoffset<objects.length-1) {
+			listoffset++;
+			updateList();
+		}
 	}
 }
 

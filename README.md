@@ -66,4 +66,4 @@ With this playground you can verify some fundamental geometric theorems :
 
 * To change the color of an element, click on its colored square and choose another color in the palette.
 
-
+* To scroll the list, use the up and down keys from the keyboard.
