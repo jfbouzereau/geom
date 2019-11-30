@@ -42,6 +42,11 @@ With this playground you can verify some fundamental geometric theorems :
 
 * Demo 20 : Area comparison
 
+* Demo 21 : Locus of the middle of a ladder sliding to the ground
+
+![demo21](demo21.png)
+
+
 # USAGE
 
 * Clone or download the directory .
